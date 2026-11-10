@@ -125,6 +125,7 @@ export default function DashboardPage({
   };
 
   const guestList = guests || [];
+  const paginationResolved = pagination || { page: 1, limit: 20, total: 0, totalPages: 0 };
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     return guestList.filter((g) => {
@@ -140,10 +141,10 @@ export default function DashboardPage({
     });
   }, [guestList, search, accreditedFilter]);
 
-  const totalPages = Math.max(1, Math.ceil(visible.length / pagination.limit));
+  const totalPages = Math.max(1, Math.ceil(visible.length / paginationResolved.limit));
   const pageGuests = visible.slice(
-    (pagination.page - 1) * pagination.limit,
-    pagination.page * pagination.limit
+    (paginationResolved.page - 1) * paginationResolved.limit,
+    paginationResolved.page * paginationResolved.limit
   );
 
   const stats = useMemo(() => ({

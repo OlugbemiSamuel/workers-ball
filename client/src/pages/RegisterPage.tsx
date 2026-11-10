@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Phone, ArrowRight } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { createGuest } from "@/api/guests.api.js";
 
 export default function RegistrationPage(): JSX.Element {
@@ -33,7 +33,7 @@ export default function RegistrationPage(): JSX.Element {
           <img
             src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
             alt="Workers Ball 2026"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center"
           />
         </div>
         <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-[#0a0a0a]/90 via-[#0a0a0a]/60 to-transparent" />
@@ -125,7 +125,7 @@ export default function RegistrationPage(): JSX.Element {
                 {status === 'loading' ? (
                   <span className="flex items-center gap-2">Processing...</span>
                 ) : (
-                  <span>Complete registration <ArrowRight className="w-4 h-4" /></span>
+                  <span>Complete registration</span>
                 )}
               </button>
             </form>
