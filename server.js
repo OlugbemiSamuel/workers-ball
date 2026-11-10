@@ -5,6 +5,8 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 
+const { getDb } = require('./src/db');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -13,15 +15,12 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Initialize database
-const db = require('./src/db');
-
 // Routes
-app.use('/api/guests', require('./src/routes/guests')(db));
-app.use('/api/accredit', require('./src/routes/accredit')(db));
-app.use('/api/tickets', require('./src/routes/tickets')(db));
-app.use('/api/import-export', require('./src/routes/import-export')(db));
-app.use('/api/reports', require('./src/routes/reports')(db));
+app.use('/api/guests', require('./src/routes/guests'));
+app.use('/api/accredit', require('./src/routes/accredit'));
+app.use('/api/tickets', require('./src/routes/tickets'));
+app.use('/api/import-export', require('./src/routes/import-export'));
+app.use('/api/reports', require('./src/routes/reports'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -50,9 +49,20 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error', message: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`Workers Ball Accreditation server running on port ${PORT}`);
-  console.log(`Event: ${process.env.EVENT_NAME}`);
-});
+// Initialize database then start server
+(async () => {
+  try {
+    await getDb();
+    console.log('Database initialized');
+
+    app.listen(PORT, () => {
+      console.log(`Workers Ball Accreditation server running on port ${PORT}`);
+      console.log(`Event: ${process.env.EVENT_NAME}`);
+    });
+  } catch (err) {
+    console.error('Failed to initialize database:', err);
+    process.exit(1);
+  }
+})();
 
 module.exports = app;

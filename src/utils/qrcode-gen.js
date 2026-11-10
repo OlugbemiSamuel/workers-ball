@@ -2,13 +2,10 @@
  * QR code payload and ticket ID generation utilities
  */
 
-// Generate a sequential ticket ID like WB26-0001
-let ticketCounter = 0;
-
+// Generate a unique ticket ID using UUID prefix
 function generateTicketId() {
-  ticketCounter++;
-  const padded = String(ticketCounter).padStart(4, '0');
-  return `WB26-${padded}`;
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `WB26-${random}`;
 }
 
 // Generate QR code payload URL for accreditation scanning
@@ -19,9 +16,4 @@ function generateQRPayload(ticketId) {
   return `${cleanBase}/accredit?ticket=${ticketId}`;
 }
 
-// Reset counter (useful for testing / seed data)
-function resetCounter(n = 0) {
-  ticketCounter = n;
-}
-
-module.exports = { generateTicketId, generateQRPayload, resetCounter };
+module.exports = { generateTicketId, generateQRPayload };
