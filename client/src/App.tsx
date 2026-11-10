@@ -6,6 +6,7 @@ import GuestListPage from './pages/GuestListPage';
 import AccreditPage from './pages/AccreditPage';
 import ImportExportPage from './pages/ImportExportPage';
 import ReportsPage from './pages/ReportsPage';
+import LoginPage from './pages/LoginPage';
 
 function App() {
   return (
@@ -14,9 +15,13 @@ function App() {
       <Route path="/" element={<RegistrationPage />} />
       <Route path="/register" element={<RegistrationPage />} />
 
-      {/* Admin routes (protected in production) */}
-      <Route path="/admin/*" element={<AdminLayout />}>
+      {/* Login route */}
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Admin routes (protected) */}
+      <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<DashboardPage />} />
+        <Route path="login" element={<LoginPage />} />
         <Route path="guests" element={<GuestListPage />} />
         <Route path="accredit" element={<AccreditPage />} />
         <Route path="import-export" element={<ImportExportPage />} />

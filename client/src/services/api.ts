@@ -9,6 +9,20 @@ export const api = axios.create({
   },
 });
 
+// Auth token interceptor
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('admin_token');
+  if (token) {
+    config.headers.Authorization = token;
+  }
+  return config;
+});
+
+export const adminApi = {
+  login: (data: { username: string; password: string }) =>
+    api.post<{ success: boolean; token: string }>('/admin/login', data),
+};
+
 // Guest types
 export interface Guest {
   id: string;

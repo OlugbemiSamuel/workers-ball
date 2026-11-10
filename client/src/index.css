@@ -19,3 +19,20 @@
     @apply bg-dark-800 border border-gold-600/30 rounded-xl p-6 shadow-[0_0_30px_rgba(217,119,6,0.15)];
   }
 }
+
+@layer utilities {
+  .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* Mobile sidebar overlay */
+@media (max-width: 767px) {
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+}

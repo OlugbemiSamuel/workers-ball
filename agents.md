@@ -2,20 +2,12 @@
 
 ## Project Goal
 Church event management & accreditation system for "Workers Ball 2026" (Harvesters Globe Ologolo, 22nd Nov 2026, 4PM).
-Stack: React + TypeScript (frontend), Node.js + Express + SQLite (sql.js, no native compile) (backend).
+Stack: React + TypeScript (frontend), Node.js + Express + SQLite (sql.js) (backend).
 Deploy target: Namecheap Shared Hosting (cPanel File Manager, Setup Node.js App).
 Repository: https://github.com/OlugbemiSamuel/workers-ball
 
 ## Atomic Commit Convention
-Each commit represents one complete, testable feature or file group:
-- `feat: init project structure and agents.md`
-- `feat: express server with sql.js database`
-- `feat: guest CRUD API`
-- `feat: accreditation search + scan + confirm`
-- `feat: ticket email + QR generation`
-- `feat: excel/csv import export`
-- `feat: accreditation report + surge hours + pdf`
-- `feat: react typescript frontend`
+Each commit represents one complete, testable feature or file group.
 
 ## Commit History (COMPLETED)
 1. ✅ `feat: init project structure and agents.md`
@@ -26,65 +18,23 @@ Each commit represents one complete, testable feature or file group:
 6. ✅ `feat: excel csv import and export for guests`
 7. ✅ `feat: accreditation report surge-hour ranking and pdf export`
 8. ✅ `feat: react typescript frontend registration admin accredit import-export reports`
+9. ✅ `fix: vite version compatibility with @vitejs/plugin-react`
+10. ✅ `fix: sql.js v1.16.0 API compatibility db.exec() returns [] fix DB_PATH`
+11. ✅ `docs: update agents.md with local testing results and fixes`
 
----
-
-## Phase 3 — Deployment (COMPLETED - Local Testing Done)
-
-### Local Testing (COMPLETED ✅)
-Both servers running successfully:
-- Backend: `http://localhost:3000` (health check: `/api/health`)
-- Frontend: `http://localhost:5173` (registration page)
-
-**Verified working endpoints:**
-- POST /api/guests — create guest
-- GET /api/guests — list with pagination/search/filter
-- GET /api/guests/:id — get single guest
-- PUT /api/guests/:id — edit guest
-- DELETE /api/guests/:id — delete guest
-- POST /api/accredit/confirm/:ticketId — accredit guest
-- Already-accredited guard — 409 Conflict on duplicate
-- GET /api/accredit/stats — totals + surge hours
-- GET /api/accredit/search?name= — manual name search
-- GET /api/accredit/guest/:ticketId — guest details by ticket
-- GET /api/tickets/qr/:ticketId — QR code image
-- POST /api/tickets/send/:ticketId — HTML ticket email
-- POST /api/import-export/import — Excel/CSV import
-- GET /api/import-export/export — Excel/CSV export
-- GET /api/reports/accreditation — JSON report
-- GET /api/reports/pdf — Leadway-style PDF report
-
-**Fixes applied during local testing:**
-- Fixed `DB_PATH` in `src/db.js` (was resolving to `C:\Users\database.sqlite` instead of project folder)
-- Fixed `sql.js` v1.16.0 API compatibility: `stmt.all()` doesn't exist, `stmt.get()` returns flat arrays; switched to `db.exec()` + `rowsToObjects()` helper
-- Fixed empty result handling: `db.exec()` returns `[]` when no rows match (not `[{ values: [] }]`)
-- Fixed Vite `process.env` not defined in client: added `define` block in `vite.config.ts`
-
-**How to test locally:**
-1. Open PowerShell terminal 1:
-   ```powershell
-   cd C:\Users\user\harversters-workers-ball
-   npm run dev
-   ```
-2. Open PowerShell terminal 2:
-   ```powershell
-   cd C:\Users\user\harversters-workers-ball/client
-   npm run dev
-   ```
-3. Open browser: `http://localhost:5173`
-4. Test pages: `/`, `/register`, `/admin`, `/admin/guests`, `/admin/accredit`, `/admin/import-export`, `/admin/reports`
-
-### Namecheap Shared Hosting Steps (PENDING)
-- [ ] Build client: `cd client && npm run build`
-- [ ] Copy `client/dist/` to `server/public/`
-- [ ] Zip project folder
-- [ ] Upload via Namecheap File Manager
-- [ ] Extract, run `npm install --production`
-- [ ] cPanel → Setup Node.js App → startup file `server.js`
-- [ ] Add environment variables from `.env.example`
-- [ ] Start app, verify `/api/guests` and registration page
-
----
+## Phase 3 — Current Changes (IN PROGRESS)
+- [ ] Remove edit/delete from guest management (view only)
+- [ ] Admin sidebar layout instead of top navigation
+- [ ] Accreditation page matching images exactly (green theme, "Accredit Interactive", camera scanner, manual entry)
+- [ ] Fix PDF report generation
+- [ ] Mobile hamburger menu + back button
+- [ ] Admin login (username/password protection)
+- [ ] Registration page: event image background + modern stacked form (like texcellence)
+- [ ] Camera scanner: start/stop camera, modal with guest details, verify button
+- [ ] Debounced search: 3 keystrokes, popup after verify clicked
+- [ ] "Accredit Interactive" branding instead of "Workers Ball" on accreditation page
+- [ ] Registration form: modern design, not bland
+- [ ] Match images 100% for mobile and desktop accreditation page
 
 ## Environment Variables Required
 ```
@@ -94,20 +44,13 @@ EVENT_NAME=Workers Ball 2026
 EVENT_DATE=22nd Nov. 2026
 EVENT_TIME=4PM
 VENUE=Harvesters Globe Ologolo
-REGISTRATION_URL=https://yourdomain.com/register
+REGISTRATION_URL=http://localhost:5173/register
 EMAIL_HOST=server396.web-hosting.com
 EMAIL_PORT=465
 EMAIL_USE_SSL=True
 EMAIL_HOST_USER=noreply@accredit.vip
 EMAIL_HOST_PASSWORD=MCe5)X3hnkO7yIUq
 DEFAULT_FROM_EMAIL=noreply@accredit.vip
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
 ```
-
----
-
-## Notes
-- `sql.js` used instead of `better-sqlite3` to avoid native compilation on Namecheap shared hosting.
-- No `accredited_by` / `performed_by` fields — multiple staff share the same accreditation page.
-- `ticket_sent_count` and `ticket_last_sent_at` track email sends per guest.
-- Accreditation guard: clicking Accredit on an already-accredited guest shows "Already accredited".
-- QR payload: `https://yourdomain.accredit.vip/accredit?ticket=WB26-0042`

@@ -15,12 +15,43 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// Simple admin auth middleware
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+
+function requireAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  const base64Credentials = authHeader.split(' ')[1];
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+  const [username, password] = credentials.split(':');
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    return next();
+  }
+  return res.status(401).json({ error: 'Invalid credentials' });
+}
+
+// Attach db getter to app for routes
+app.getDb = getDb;
+
+// Public routes (no auth)
 app.use('/api/guests', require('./src/routes/guests'));
 app.use('/api/accredit', require('./src/routes/accredit'));
 app.use('/api/tickets', require('./src/routes/tickets'));
 app.use('/api/import-export', require('./src/routes/import-export'));
 app.use('/api/reports', require('./src/routes/reports'));
+
+// Auth route for admin login
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    const token = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
+    return res.json({ success: true, token: `Basic ${token}` });
+  }
+  res.status(401).json({ error: 'Invalid credentials' });
+});
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Search, Edit2, Trash2, Mail, CheckCircle, Loader2 } from 'lucide-react';
+import { Search, Mail, CheckCircle, Loader2 } from 'lucide-react';
 import { guestApi, ticketApi, type Guest } from '@/services/api';
 
 export default function GuestListPage() {
@@ -44,22 +44,12 @@ export default function GuestListPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this guest?')) return;
-    try {
-      await guestApi.remove(id);
-      fetchGuests();
-    } catch (err) {
-      alert('Failed to delete guest');
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-serif font-bold text-gold-400">Guest Management</h1>
-          <p className="text-gray-400 text-sm">Manage registered guests for Workers Ball 2026</p>
+          <p className="text-gray-400 text-sm">View registered guests for Workers Ball 2026</p>
         </div>
         <button
           onClick={() => {}}
@@ -173,20 +163,6 @@ export default function GuestListPage() {
                         ) : (
                           <Mail className="w-4 h-4" />
                         )}
-                      </button>
-                      <button
-                        onClick={() => {}}
-                        className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
-                        title="Edit Details"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(guest.id)}
-                        className="p-2 text-gray-400 hover:text-red-400 transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>

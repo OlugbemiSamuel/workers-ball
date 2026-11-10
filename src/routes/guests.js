@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { getDb, sqlEscape, rowsToObjects } = require('../db');
 const { generateQRPayload, generateTicketId } = require('../utils/qrcode-gen');
 
+// GET /api/guests — list with pagination, search, filter (VIEW ONLY - no edit/delete)
 router.get('/', async (req, res) => {
   try {
     const db = await getDb();
@@ -40,6 +41,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/guests/:id — get single guest (view only)
 router.get('/:id', async (req, res) => {
   try {
     const db = await getDb();
@@ -53,6 +55,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// POST /api/guests — create guest
 router.post('/', async (req, res) => {
   try {
     const db = await getDb();
@@ -90,43 +93,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
-  try {
-    const db = await getDb();
-    const { full_name, email, phone } = req.body;
-    const existing = db.exec(`SELECT id FROM guests WHERE id = '${sqlEscape(req.params.id)}'`);
-    if (existing.length === 0 || existing[0].values.length === 0) return res.status(404).json({ error: 'Guest not found' });
-
-    if (email) {
-      const emailExists = db.exec(`SELECT id FROM guests WHERE email = '${sqlEscape(email)}' AND id != '${sqlEscape(req.params.id)}' LIMIT 1`);
-      if (emailExists.length > 0 && emailExists[0].values.length > 0) return res.status(409).json({ error: 'A guest with this email already exists' });
-    }
-
-    const now = new Date().toISOString();
-    db.run(
-      `UPDATE guests SET full_name = COALESCE('${sqlEscape(full_name)}', full_name), email = COALESCE('${sqlEscape(email)}', email), phone = COALESCE('${sqlEscape(phone)}', phone), updated_at = '${now}' WHERE id = '${sqlEscape(req.params.id)}'`
-    );
-
-    const updatedResult = db.exec(`SELECT * FROM guests WHERE id = '${sqlEscape(req.params.id)}'`);
-    const updated = rowsToObjects(updatedResult)[0];
-    res.json({ guest: updated });
-  } catch (err) {
-    console.error('Update guest error:', err);
-    res.status(500).json({ error: 'Failed to update guest' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    const db = await getDb();
-    const existing = db.exec(`SELECT id FROM guests WHERE id = '${sqlEscape(req.params.id)}'`);
-    if (existing.length === 0 || existing[0].values.length === 0) return res.status(404).json({ error: 'Guest not found' });
-    db.run(`DELETE FROM guests WHERE id = '${sqlEscape(req.params.id)}'`);
-    res.json({ message: 'Guest deleted successfully' });
-  } catch (err) {
-    console.error('Delete guest error:', err);
-    res.status(500).json({ error: 'Failed to delete guest' });
-  }
-});
+// DELETE edit and update routes — REMOVED per requirements (no edit/delete allowed)
 
 module.exports = router;

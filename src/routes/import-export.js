@@ -1,4 +1,5 @@
 const express = require('express');
+const router = express.Router();
 const multer = require('multer');
 const XLSX = require('xlsx');
 const fs = require('fs');
@@ -7,7 +8,26 @@ const { v4: uuidv4 } = require('uuid');
 const { getDb, sqlEscape, rowsToObjects } = require('../db');
 const { generateTicketId, generateQRPayload } = require('../utils/qrcode-gen');
 
-const router = express.Router();
+// Simple admin auth check
+function requireAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  const base64Credentials = authHeader.split(' ')[1];
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+  const [username, password] = credentials.split(':');
+  const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    return next();
+  }
+  return res.status(401).json({ error: 'Invalid credentials' });
+}
+
+router.use(requireAuth);
+
+// Configure multer for temp file uploads
 const uploadDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 

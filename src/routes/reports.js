@@ -3,6 +3,25 @@ const router = express.Router();
 const { jsPDF } = require('jspdf');
 const { getDb, sqlEscape, rowsToObjects } = require('../db');
 
+// Simple admin auth check
+function requireAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  const base64Credentials = authHeader.split(' ')[1];
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+  const [username, password] = credentials.split(':');
+  const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    return next();
+  }
+  return res.status(401).json({ error: 'Invalid credentials' });
+}
+
+router.use(requireAuth);
+
 router.get('/accreditation', async (req, res) => {
   try {
     const db = await getDb();
