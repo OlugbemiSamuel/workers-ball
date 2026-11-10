@@ -97,7 +97,7 @@ export default function LoginPage({
 
           <div className="mt-6 pt-6 border-t border-white/10">
             <p className="text-xs text-gray-500 text-center">
-              {process.env.EVENT_NAME || "Workers Ball 2026"} • {process.env.EVENT_DATE || "22nd Nov. 2026"}
+              Workers Ball 2026 • 22nd Nov. 2026
             </p>
           </div>
         </div>

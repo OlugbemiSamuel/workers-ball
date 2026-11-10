@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Phone, Calendar, MapPin, QrCode, ArrowRight } from "lucide-react";
+import { Mail, Phone, ArrowRight } from "lucide-react";
 import { createGuest } from "@/api/guests.api.js";
 
 export default function RegistrationPage(): JSX.Element {
@@ -26,7 +26,7 @@ export default function RegistrationPage(): JSX.Element {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Background image */}
+      {/* Background image - event flyer */}
       <div className="relative flex-1 overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
           <img
@@ -141,29 +141,6 @@ export default function RegistrationPage(): JSX.Element {
                 <span>{message}</span>
               </div>
             )}
-
-            <div className="mt-8 pt-6 border-t border-[#0a0a0a]/10">
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-4">
-                <div className="w-px h-4 bg-[#0a0a0a]" />
-                <span>Already registered?</span>
-                <div className="w-px h-4 bg-[#0a0a0a]" />
-              </div>
-              <button
-                onClick={() => {}}
-                className="text-[#d97706] hover:text-[#b45309] text-sm font-medium underline"
-              >
-                Check My Ticket Status
-              </button>
-            </div>
-
-            <div className="mt-6">
-              <div className="flex items-center justify-center gap-2">
-                <QrCode className="w-4 h-4 text-[#d97706]" />
-                <span className="text-sm text-gray-600">
-                  Scan QR on event banner to register
-                </span>
-              </div>
-            </div>
           </div>
 
           <div className="mt-8 text-center">
