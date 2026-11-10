@@ -4,6 +4,7 @@
 Church event management & accreditation system for "Workers Ball 2026" (Harvesters Globe Ologolo, 22nd Nov 2026, 4PM).
 Stack: React + TypeScript (frontend), Node.js + Express + SQLite (sql.js, no native compile) (backend).
 Deploy target: Namecheap Shared Hosting (cPanel File Manager, Setup Node.js App).
+Repository: https://github.com/OlugbemiSamuel/workers-ball
 
 ## Atomic Commit Convention
 Each commit represents one complete, testable feature or file group:
@@ -15,56 +16,16 @@ Each commit represents one complete, testable feature or file group:
 - `feat: excel/csv import export`
 - `feat: accreditation report + surge hours + pdf`
 - `feat: react typescript frontend`
-- `feat: deployment config for namecheap shared`
 
----
-
-## Phase 1 — Project Setup (PENDING)
-
-### Files to create
-- [x] `agents.md` — this tracking file
-- [ ] `package.json` — root dependencies
-- [ ] `server.js` — Express entry point (cPanel startup file)
-- [ ] `.env.example` — env template
-- [ ] `src/db.js` — sql.js initialization + schema
-- [ ] `src/routes/guests.js` — guest CRUD
-- [ ] `src/routes/accredit.js` — search/scan/confirm accreditation
-- [ ] `src/routes/tickets.js` — send email, QR image endpoint
-- [ ] `src/routes/import-export.js` — multer upload + export
-- [ ] `src/routes/reports.js` — stats, surge hours, PDF
-- [ ] `src/controllers/*.js` — business logic
-- [ ] `src/email/ticket.html` — HTML email template
-- [ ] `src/utils/qrcode-gen.js` — QR generation
-- [ ] `src/utils/pdf-report.js` — Leadway-style PDF report
-
-### Phase 1 Commits (atomic)
-1. `feat: init project structure and agents.md`
-2. `feat: express server with sql.js database and env config`
-3. `feat: guest crud api (create, list, search, edit, delete)`
-4. `feat: accreditation flow — manual search + qr scan + confirm with already-accredited guard`
-5. `feat: ticket email sending with html template and qr embed, send-count tracking`
-6. `feat: excel/csv import and export for guests`
-7. `feat: accreditation report with surge-hour ranking and pdf export`
-
----
-
-## Phase 2 — React TypeScript Frontend (PENDING)
-
-### Pages
-- [ ] `/` — Registration landing page (mimics Workers Ball 2026 design, QR code on banner)
-- [ ] `/register` — Guest registration form
-- [ ] `/admin` — Dashboard stats
-- [ ] `/admin/guests` — Guest list, search, edit, send ticket
-- [ ] `/admin/accredit` — Dual mode: manual search + QR scanner modal/card
-- [ ] `/admin/import-export` — Excel/CSV upload & download
-- [ ] `/admin/reports` — Report viewer + PDF download
-
-### Phase 2 Commits
-8. `feat: react typescript frontend scaffold with vite`
-9. `feat: registration page mimicking workers ball design`
-10. `feat: admin dashboard and guest management`
-11. `feat: accreditation page with search and qr scanner`
-12. `feat: import export and reports pages`
+## Commit History (COMPLETED)
+1. ✅ `feat: init project structure and agents.md`
+2. ✅ `feat: express server with sql.js database and env config`
+3. ✅ `feat: guest crud api create list search edit delete`
+4. ✅ `feat: accreditation flow manual search qr scan confirm with already-accredited guard`
+5. ✅ `feat: ticket email sending with html template qr embed and send-count tracking`
+6. ✅ `feat: excel csv import and export for guests`
+7. ✅ `feat: accreditation report surge-hour ranking and pdf export`
+8. ✅ `feat: react typescript frontend registration admin accredit import-export reports`
 
 ---
 
