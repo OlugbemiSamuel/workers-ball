@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Upload, Download, FileText, Loader2 } from 'lucide-react';
-import { importExportApi } from '@/services/api';
+import { useState } from "react";
+import { Upload, Download, FileText, Loader2 } from "lucide-react";
+import { importExportApi } from "@/services/api.js";
 
 export default function ImportExportPage() {
   const [importing, setImporting] = useState(false);
@@ -11,9 +11,9 @@ export default function ImportExportPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const validTypes = ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv'];
-    if (!validTypes.includes(file.type) && !file.name.endsWith('.csv') && !file.name.endsWith('.xlsx')) {
-      setImportError('Please upload a valid Excel (.xlsx) or CSV file.');
+    const validTypes = ["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv"];
+    if (!validTypes.includes(file.type) && !file.name.endsWith(".csv") && !file.name.endsWith(".xlsx")) {
+      setImportError("Please upload a valid Excel (.xlsx) or CSV file.");
       return;
     }
 
@@ -22,48 +22,50 @@ export default function ImportExportPage() {
     setImportResult(null);
 
     try {
-      const res = await importExportApi.import(file);
+      // Read file as text and send as JSON body (server expects { csv: "..." })
+      const csvText = await file.text();
+      const res = await importExportApi.import(csvText);
       setImportResult(res.data);
     } catch (err: any) {
-      setImportError(err.response?.data?.error || 'Import failed');
+      setImportError(err.response?.data?.error || "Import failed");
     } finally {
       setImporting(false);
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
-  const handleExport = async (format: 'xlsx' | 'csv', accredited?: string) => {
+  const handleExport = async (format: "xlsx" | "csv", accredited?: string) => {
     try {
       const res = await importExportApi.export(format, accredited);
       const url = URL.createObjectURL(new Blob([res.data]));
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `workers-ball-guests-${new Date().toISOString().split('T')[0]}.${format}`;
+      a.download = `workers-ball-guests-${new Date().toISOString().split("T")[0]}.${format}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Export failed');
+      alert("Export failed");
     }
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-serif font-bold text-gold-400">Import / Export Guests</h1>
+        <h1 className="text-2xl font-serif font-bold text-[#d97706]">Import / Export Guests</h1>
         <p className="text-gray-400 text-sm">Bulk import guests from Excel/CSV or export the guest list</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Import Card */}
-        <div className="event-card p-6">
+        <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Upload className="w-5 h-5 text-gold-400" /> Import Guests
+            <Upload className="w-5 h-5 text-[#d97706]" /> Import Guests
           </h2>
           <p className="text-sm text-gray-500 mb-4">Upload an Excel (.xlsx) or CSV file with columns: Full Name, Email, Phone</p>
 
-          <div className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-gold-400/50 transition-colors cursor-pointer">
+          <div className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-[#d97706]/50 transition-colors cursor-pointer">
             <input
               type="file"
               accept=".xlsx,.csv"
@@ -105,12 +107,12 @@ export default function ImportExportPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Skipped:</span>
-                  <span className="text-yellow-400">{importResult.skipped}</span>
+                  <span className="text-[#d97706]">{importResult.skipped}</span>
                 </div>
               </div>
               {importResult.errors.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-xs text-yellow-500 mb-1">Errors:</p>
+                  <p className="text-xs text-[#d97706] mb-1">Errors:</p>
                   <ul className="text-xs text-gray-400 space-y-1">
                     {importResult.errors.map((e, i) => (
                       <li key={i}>Row {e.row}: {e.reason}</li>
@@ -123,22 +125,22 @@ export default function ImportExportPage() {
         </div>
 
         {/* Export Card */}
-        <div className="event-card p-6">
+        <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Download className="w-5 h-5 text-gold-400" /> Export Guests
+            <Download className="w-5 h-5 text-[#d97706]" /> Export Guests
           </h2>
           <p className="text-sm text-gray-500 mb-4">Download the guest list as Excel or CSV</p>
 
           <div className="space-y-3">
             <button
-              onClick={() => handleExport('xlsx')}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-dark-800 border border-white/10 text-white hover:bg-dark-700 transition-colors"
+              onClick={() => handleExport("xlsx")}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#0a0a0a] border border-white/10 text-white hover:bg-[#1a1a1a] transition-colors"
             >
               <FileText className="w-4 h-4" /> Export to Excel (.xlsx)
             </button>
             <button
-              onClick={() => handleExport('csv')}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-dark-800 border border-white/10 text-white hover:bg-dark-700 transition-colors"
+              onClick={() => handleExport("csv")}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#0a0a0a] border border-white/10 text-white hover:bg-[#1a1a1a] transition-colors"
             >
               <FileText className="w-4 h-4" /> Export to CSV (.csv)
             </button>
@@ -146,20 +148,20 @@ export default function ImportExportPage() {
               <label className="block text-xs text-gray-500 uppercase mb-2">Filter by status:</label>
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleExport('xlsx')}
-                  className="flex-1 px-3 py-2 rounded-lg bg-dark-800 border border-white/10 text-xs text-white hover:bg-dark-700"
+                  onClick={() => handleExport("xlsx")}
+                  className="flex-1 px-3 py-2 rounded-lg bg-[#0a0a0a] border border-white/10 text-xs text-white hover:bg-[#1a1a1a]"
                 >
                   All Guests
                 </button>
                 <button
-                  onClick={() => handleExport('xlsx', 'true')}
-                  className="flex-1 px-3 py-2 rounded-lg bg-dark-800 border border-white/10 text-xs text-white hover:bg-dark-700"
+                  onClick={() => handleExport("xlsx", "true")}
+                  className="flex-1 px-3 py-2 rounded-lg bg-[#0a0a0a] border border-white/10 text-xs text-white hover:bg-[#1a1a1a]"
                 >
                   Accredited Only
                 </button>
                 <button
-                  onClick={() => handleExport('xlsx', 'false')}
-                  className="flex-1 px-3 py-2 rounded-lg bg-dark-800 border border-white/10 text-xs text-white hover:bg-dark-700"
+                  onClick={() => handleExport("xlsx", "false")}
+                  className="flex-1 px-3 py-2 rounded-lg bg-[#0a0a0a] border border-white/10 text-xs text-white hover:bg-[#1a1a1a]"
                 >
                   Not Accredited
                 </button>

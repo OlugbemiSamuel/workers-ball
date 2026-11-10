@@ -1,27 +1,22 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 export const api = axios.create({
   baseURL: API_BASE,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Auth token interceptor
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('admin_token');
+  const token = localStorage.getItem("workersball.token");
   if (token) {
-    config.headers.Authorization = token;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
-
-export const adminApi = {
-  login: (data: { username: string; password: string }) =>
-    api.post<{ success: boolean; token: string }>('/admin/login', data),
-};
 
 // Guest types
 export interface Guest {
@@ -55,21 +50,15 @@ export interface AccreditationStats {
   pending: number;
   percentage: number;
   surgeHours: Array<{ hour: number; count: number }>;
-  recent?: Array<{
-    full_name: string;
-    email: string | null;
-    ticket_id: string;
-    accredited_at: string;
-  }>;
 }
 
 // Guest API
 export const guestApi = {
   list: (params?: { page?: number; limit?: number; search?: string; accredited?: string }) =>
-    api.get<PaginatedGuests>('/guests', { params }),
+    api.get<PaginatedGuests>("/guests", { params }),
   get: (id: string) => api.get<{ guest: Guest }>(`/guests/${id}`),
   create: (data: { full_name: string; email?: string; phone?: string }) =>
-    api.post<{ guest: Guest }>('/guests', data),
+    api.post<{ guest: Guest }>("/guests", data),
   update: (id: string, data: { full_name?: string; email?: string; phone?: string }) =>
     api.put<{ guest: Guest }>(`/guests/${id}`, data),
   remove: (id: string) => api.delete(`/guests/${id}`),
@@ -77,33 +66,27 @@ export const guestApi = {
 
 // Accreditation API
 export const accreditApi = {
-  search: (name: string) => api.get<{ results: Guest[] }>('/accredit/search', { params: { name } }),
-  getByTicket: (ticketId: string) => api.get<{ guest: Guest }>(`/accredit/guest/${ticketId}`),
-  confirm: (ticketId: string) => api.post<{ message: string; guest: Guest }>(`/accredit/confirm/${ticketId}`),
-  stats: () => api.get<AccreditationStats>('/accredit/stats'),
+  search: (name: string) => api.get<{ results: Guest[] }>("/guests/search", { params: { name } }),
+  getByTicket: (ticketId: string) => api.get<{ guest: Guest }>(`/guests/qr/${ticketId}`),
+  confirm: (ticketId: string) => api.post<{ message: string; guest: Guest }>(`/guests/${ticketId}/accredit`),
+  stats: () => api.get<AccreditationStats>("/guests/stats/accreditation"),
 };
 
 // Ticket API
 export const ticketApi = {
-  send: (ticketId: string) => api.post<{ message: string; messageId: string; guest: { ticket_id: string; ticket_sent_count: number; ticket_last_sent_at: string | null } }>(`/tickets/send/${ticketId}`),
-  qrUrl: (ticketId: string) => `/api/tickets/qr/${ticketId}`,
+  send: (ticketId: string) => api.post<{ message: string; messageId: string; guest: { ticket_id: string; ticket_sent_count: number; ticket_last_sent_at: string | null } }>(`/guests/${ticketId}/ticket-email`),
+  qrUrl: (ticketId: string) => `/api/guests/qr/${ticketId}`,
 };
 
 // Import / Export
 export const importExportApi = {
-  import: (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    return api.post('/import-export/import', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-  },
-  export: (format: 'xlsx' | 'csv' = 'xlsx', accredited?: string) =>
-    api.get('/import-export/export', { params: { format, accredited }, responseType: 'blob' }),
+  import: (csvText: string) => api.post("/guests/import", { csv: csvText }),
+  export: (format: "xlsx" | "csv" = "xlsx", accredited?: string) =>
+    api.get("/guests/export", { params: { format, accredited }, responseType: "blob" }),
 };
 
 // Reports
 export const reportsApi = {
-  accreditation: () => api.get<AccreditationStats>('/reports/accreditation'),
-  pdf: () => api.get('/reports/pdf', { responseType: 'blob' }),
+  accreditation: () => api.get<AccreditationStats>("/guests/recent-accreditations"),
+  pdf: () => api.get("/guests/report/pdf", { responseType: "blob" }),
 };

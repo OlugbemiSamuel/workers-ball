@@ -7,7 +7,7 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-dark-900 text-white;
+    @apply bg-[#0a0a0a] text-white;
   }
 }
 
@@ -15,24 +15,22 @@
   .gold-gradient {
     background: linear-gradient(135deg, #d97706 0%, #b45309 50%, #78350f 100%);
   }
-  .event-card {
-    @apply bg-dark-800 border border-gold-600/30 rounded-xl p-6 shadow-[0_0_30px_rgba(217,119,6,0.15)];
+  .btn-primary {
+    @apply bg-[#0a0a0a] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#1a1a1a] transition-colors;
   }
-}
-
-@layer utilities {
-  .backdrop-blur-md {
-    backdrop-filter: blur(12px);
+  .btn-secondary {
+    @apply border border-white/20 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#1a1a1a]/30 transition-colors;
   }
-}
-
-/* Mobile sidebar overlay */
-@media (max-width: 767px) {
-  .sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 30;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+  .input-cls {
+    @apply w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 focus:border-gold-500 focus:outline-none text-white placeholder-gray-500;
+  }
+  .field-error-cls {
+    @apply text-red-500 text-xs mt-1;
+  }
+  .alert-error-cls {
+    @apply p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm;
+  }
+  .notice-info-cls {
+    @apply p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg text-blue-400 text-sm;
   }
 }
