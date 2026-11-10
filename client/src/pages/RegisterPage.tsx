@@ -168,10 +168,10 @@ export default function RegistrationPage(): JSX.Element {
 
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-500">
-              {process.env.EVENT_DATE || "22nd Nov. 2026"} • {process.env.EVENT_TIME || "4PM"}
+              22nd Nov. 2026 • 4PM
             </p>
             <p className="text-sm text-gray-500">
-              {process.env.VENUE || "Harvesters Globe Ologolo"}
+              Harvesters Globe Ologolo
             </p>
           </div>
         </div>
