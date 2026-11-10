@@ -1,0 +1,138 @@
+const express = require('express');
+const router = express.Router();
+const { v4: uuidv4 } = require('uuid');
+const { generateQRPayload, generateTicketId } = require('../utils/qrcode-gen');
+
+// GET /api/guests — list with pagination, search, filter
+router.get('/', (req, res) => {
+  const db = req.app.locals.db || require('../db');
+  const {
+    page = 1,
+    limit = 20,
+    search = '',
+    accredited = '', // 'true' | 'false' | ''
+    sortBy = 'created_at',
+    sortOrder = 'DESC'
+  } = req.query;
+
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+  const offset = (pageNum - 1) * limitNum;
+
+  let whereClause = '';
+  let params = [];
+
+  const conditions = [];
+  if (search) {
+    conditions.push(`(full_name LIKE ? OR email LIKE ? OR ticket_id LIKE ? OR phone LIKE ?)`);
+    const like = `%${search}%`;
+    params.push(like, like, like, like);
+  }
+  if (accredited === 'true') {
+    conditions.push('accredited = 1');
+  } else if (accredited === 'false') {
+    conditions.push('accredited = 0');
+  }
+  if (conditions.length > 0) {
+    whereClause = 'WHERE ' + conditions.join(' AND ');
+  }
+
+  const validSortColumns = ['full_name', 'email', 'ticket_id', 'accredited', 'accredited_at', 'created_at', 'updated_at'];
+  const safeSort = validSortColumns.includes(sortBy) ? sortBy : 'created_at';
+  const safeOrder = sortOrder === 'ASC' ? 'ASC' : 'DESC';
+
+  // Count total
+  const countRow = db.prepare(`SELECT COUNT(*) as total FROM guests ${whereClause}`).get(params);
+  const total = countRow.total;
+
+  // Fetch rows
+  const rows = db.prepare(
+    `SELECT * FROM guests ${whereClause} ORDER BY ${safeSort} ${safeOrder} LIMIT ? OFFSET ?`
+  ).all(...params, limitNum, offset);
+
+  res.json({
+    guests: rows,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages: Math.ceil(total / limitNum)
+    }
+  });
+});
+
+// GET /api/guests/:id
+router.get('/:id', (req, res) => {
+  const db = req.app.locals.db || require('../db');
+  const row = db.prepare('SELECT * FROM guests WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Guest not found' });
+  res.json({ guest: row });
+});
+
+// POST /api/guests — create guest
+router.post('/', (req, res) => {
+  const db = req.app.locals.db || require('../db');
+  const { full_name, email, phone } = req.body;
+
+  if (!full_name) {
+    return res.status(400).json({ error: 'full_name is required' });
+  }
+
+  const now = new Date().toISOString();
+  const id = uuidv4();
+  const ticket_id = generateTicketId();
+  const qr_code_data = generateQRPayload(ticket_id);
+
+  // Check if email already exists (optional, allow duplicates but warn)
+  const existing = db.prepare('SELECT id FROM guests WHERE email = ? LIMIT 1').get(email);
+  if (existing && email) {
+    return res.status(409).json({ error: 'A guest with this email already exists' });
+  }
+
+  db.run(
+    `INSERT INTO guests (id, full_name, email, phone, ticket_id, qr_code_data, accredited, accredited_at, ticket_sent_count, ticket_last_sent_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, 0, NULL, 0, NULL, ?, ?)`,
+    [id, full_name, email || null, phone || null, ticket_id, qr_code_data, now, now]
+  );
+
+  const newGuest = db.prepare('SELECT * FROM guests WHERE id = ?').get(id);
+  res.status(201).json({ guest: newGuest });
+});
+
+// PUT /api/guests/:id — edit guest details
+router.put('/:id', (req, res) => {
+  const db = req.app.locals.db || require('../db');
+  const { full_name, email, phone } = req.body;
+
+  const existing = db.prepare('SELECT id FROM guests WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Guest not found' });
+
+  // Check email uniqueness if changing
+  if (email) {
+    const emailExists = db.prepare('SELECT id FROM guests WHERE email = ? AND id != ?').get(email, req.params.id);
+    if (emailExists) {
+      return res.status(409).json({ error: 'A guest with this email already exists' });
+    }
+  }
+
+  const now = new Date().toISOString();
+  db.run(
+    `UPDATE guests SET full_name = COALESCE(?, full_name), email = COALESCE(?, email), phone = COALESCE(?, phone), updated_at = ? WHERE id = ?`,
+    [full_name || null, email || null, phone || null, now, req.params.id]
+  );
+
+  const updated = db.prepare('SELECT * FROM guests WHERE id = ?').get(req.params.id);
+  res.json({ guest: updated });
+});
+
+// DELETE /api/guests/:id
+router.delete('/:id', (req, res) => {
+  const db = req.app.locals.db || require('../db');
+  const existing = db.prepare('SELECT id FROM guests WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Guest not found' });
+
+  db.run('DELETE FROM guests WHERE id = ?', [req.params.id]);
+  res.json({ message: 'Guest deleted successfully' });
+});
+
+module.exports = router;
