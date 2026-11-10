@@ -211,8 +211,8 @@ export default function AccreditPage() {
             </div>
           )}
           <div className="absolute top-4 right-4 text-right">
-            <span className="text-xs font-mono text-gray-400 block">CAMERA</th>
-            <span className="text-xs font-mono text-gray-400">REQUIRED</th>
+            <span className="text-xs font-mono text-gray-400 block">CAMERA</span>
+            <span className="text-xs font-mono text-gray-400">REQUIRED</span>
           </div>
         </div>
       </div>
