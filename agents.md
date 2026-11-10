@@ -99,14 +99,15 @@ Follows the exact same layered pattern as the texcellence conference project:
 11. `docs: update agents.md with local testing results and fixes`
 12. `fix: AccreditPage syntax error </th> tags causing 500 error`
 13. `docs: mark all Phase 3 changes complete`
-14. `feat: sidebar admin layout, accredit page redesign, registration redesign, admin login auth, remove edit/delete, mobile hamburger`
+14. `feat: sidebar admin layout, accredit page redesign, registration redesign, admin login auth, remove delete, add edit, mobile hamburger`
 15. `feat: complete rebuild using texcellence patterns - server + frontend fully functional`
+16. `feat: add guest edit functionality - remove delete, add edit modal and PATCH endpoint`
 
 ## Features Implemented & Tested
 ✅ **Registration Page** — Event background image, modern stacked form (First name, Last name, Email, Phone), public access
 ✅ **Admin Login** — JWT authentication with admin@harvesters.org / Admin123!
 ✅ **Admin Dashboard** — Sidebar layout, stats cards, guest management
-✅ **Guest Management** — View only (no edit/delete), search, filter, pagination, add guest, send ticket email, accredit guest
+✅ **Guest Management** — View, edit (no delete), search, filter, pagination, add guest, send ticket email, accredit guest
 ✅ **Accreditation Page** — Green theme "Accredit Interactive", camera scanner (start/stop), manual search with debounce (3 keystrokes), verify button, already-accredited guard, recent activity
 ✅ **Import/Export** — Excel/CSV import with preview, Excel/CSV export with filters
 ✅ **Reports** — PDF report with event stats, surge hours ranked, guest table with accreditation status
