@@ -60,8 +60,8 @@ export const guestApi = {
   create: (data: { full_name: string; email?: string; phone?: string }) =>
     api.post<{ guest: Guest }>("/guests", data),
   update: (id: string, data: { full_name?: string; email?: string; phone?: string }) =>
-    api.put<{ guest: Guest }>(`/guests/${id}`, data),
-  remove: (id: string) => api.delete(`/guests/${id}`),
+    api.patch<{ guest: Guest }>(`/guests/${id}`, data),
+  // No delete endpoint - guests cannot be deleted
 };
 
 // Accreditation API

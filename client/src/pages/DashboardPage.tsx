@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Users, CheckCircle, Clock, Mail, Activity, Plus, FileText, Download, Scan, LogOut } from "lucide-react";
+import { Search, Users, CheckCircle, Clock, Mail, Activity, Plus, FileText, Download, Scan, LogOut, X } from "lucide-react";
 import { guestApi, ticketApi, type Guest } from "@/services/api.js";
 
 type Section = "overview" | "attendees" | "reports" | "settings";
@@ -27,6 +27,7 @@ export default function DashboardPage({
   const [sendingRsvp, setSendingRsvp] = useState<string | null>(null);
   const [sendingTicket, setSendingTicket] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Guest | null>(null);
   const [importing, setImporting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -67,6 +68,30 @@ export default function DashboardPage({
       (e.currentTarget as HTMLFormElement).reset();
     } catch (err: any) {
       setNotice(err.response?.data?.error || "Failed to create guest");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleEditGuest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editing) return;
+    const formData = new FormData(e.currentTarget);
+    const first_name = formData.get("first_name") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+    setCreating(true); // reuse creating state for loading
+    try {
+      await guestApi.update(editing.id, {
+        full_name: first_name || undefined,
+        email: email || undefined,
+        phone: phone || undefined,
+      });
+      setNotice("Guest updated successfully");
+      setEditing(null);
+      loadGuests();
+    } catch (err: any) {
+      setNotice(err.response?.data?.error || "Failed to update guest");
     } finally {
       setCreating(false);
     }
@@ -366,6 +391,13 @@ export default function DashboardPage({
                               )}
                             </button>
                             <button
+                              onClick={() => setEditing(guest)}
+                              className="p-2 text-gray-400 hover:text-[#d97706] transition-colors"
+                              title="Edit Guest"
+                            >
+                              <FileText className="w-4 h-4" />
+                            </button>
+                            <button
                               onClick={() => handleAccredit(guest.id)}
                               className="p-2 text-gray-400 hover:text-green-400 transition-colors"
                               title={guest.accredited_at === 1 ? "Already accredited" : "Accredit Guest"}
@@ -454,6 +486,67 @@ export default function DashboardPage({
             >
               Download PDF Report
             </button>
+          </div>
+        )}
+        {editing && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-[#1a1a1a] border border-white/20 rounded-xl p-6 shadow-2xl max-w-md w-full">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-[#d97706]">Edit Guest</h3>
+                <button
+                  onClick={() => setEditing(null)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={handleEditGuest} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Full Name</label>
+                  <input
+                    type="text"
+                    name="first_name"
+                    className="w-full px-4 py-3 rounded-lg bg-[#0a0a0a] border border-white/20 focus:border-[#d97706] focus:outline-none text-white"
+                    defaultValue={editing?.full_name}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    className="w-full px-4 py-3 rounded-lg bg-[#0a0a0a] border border-white/20 focus:border-[#d97706] focus:outline-none text-white"
+                    defaultValue={editing?.email || ""}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Phone</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    className="w-full px-4 py-3 rounded-lg bg-[#0a0a0a] border border-white/20 focus:border-[#d97706] focus:outline-none text-white"
+                    defaultValue={editing?.phone || ""}
+                  />
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="submit"
+                    disabled={creating}
+                    className="flex-1 bg-[#d97706] text-[#0a0a0a] py-3 rounded-lg font-semibold hover:bg-[#b45309] transition-colors"
+                  >
+                    {creating ? "Saving..." : "Save Changes"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditing(null)}
+                    className="flex-1 bg-[#0a0a0a] border border-white/20 text-white py-3 rounded-lg font-semibold hover:bg-[#2a2a2a] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>
