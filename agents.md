@@ -36,6 +36,30 @@ Both servers running successfully:
 - Backend: `http://localhost:3000` (health check: `/api/health`)
 - Frontend: `http://localhost:5173` (registration page)
 
+**Verified working endpoints:**
+- POST /api/guests — create guest
+- GET /api/guests — list with pagination/search/filter
+- GET /api/guests/:id — get single guest
+- PUT /api/guests/:id — edit guest
+- DELETE /api/guests/:id — delete guest
+- POST /api/accredit/confirm/:ticketId — accredit guest
+- Already-accredited guard — 409 Conflict on duplicate
+- GET /api/accredit/stats — totals + surge hours
+- GET /api/accredit/search?name= — manual name search
+- GET /api/accredit/guest/:ticketId — guest details by ticket
+- GET /api/tickets/qr/:ticketId — QR code image
+- POST /api/tickets/send/:ticketId — HTML ticket email
+- POST /api/import-export/import — Excel/CSV import
+- GET /api/import-export/export — Excel/CSV export
+- GET /api/reports/accreditation — JSON report
+- GET /api/reports/pdf — Leadway-style PDF report
+
+**Fixes applied during local testing:**
+- Fixed `DB_PATH` in `src/db.js` (was resolving to `C:\Users\database.sqlite` instead of project folder)
+- Fixed `sql.js` v1.16.0 API compatibility: `stmt.all()` doesn't exist, `stmt.get()` returns flat arrays; switched to `db.exec()` + `rowsToObjects()` helper
+- Fixed empty result handling: `db.exec()` returns `[]` when no rows match (not `[{ values: [] }]`)
+- Fixed Vite `process.env` not defined in client: added `define` block in `vite.config.ts`
+
 **How to test locally:**
 1. Open PowerShell terminal 1:
    ```powershell
