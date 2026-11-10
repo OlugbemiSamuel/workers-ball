@@ -23,6 +23,7 @@ export default function DashboardPage({
   const [loading, setLoading] = useState(true);
   const [section, setSection] = useState<Section>(initialSection);
   const [sendingTicket, setSendingTicket] = useState<string | null>(null);
+  const [accreditingTicket, setAccreditingTicket] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editing, setEditing] = useState<Guest | null>(null);
@@ -109,6 +110,7 @@ export default function DashboardPage({
   };
 
   const handleAccredit = async (ticketId: string) => {
+    setAccreditingTicket(ticketId);
     try {
       await guestApi.confirm(ticketId);
       setNotice("Guest accredited");
@@ -119,6 +121,8 @@ export default function DashboardPage({
       } else {
         setNotice(err.response?.data?.error || "Accreditation failed");
       }
+    } finally {
+      setAccreditingTicket(null);
     }
   };
 
@@ -385,15 +389,28 @@ export default function DashboardPage({
                               <FileText className="w-4 h-4" />
                             </button>
                             <button
+                              type="button"
                               onClick={() => handleAccredit(guest.ticket_id)}
-                              disabled={isAccredited(guest)}
-                              className="p-2 bg-[#d97706] text-[#0a0a0a] rounded-lg text-sm font-medium hover:bg-[#b45309] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                              title={isAccredited(guest) ? "Already accredited" : "Accredit Guest"}
+                              disabled={isAccredited(guest) || accreditingTicket === guest.ticket_id}
+                              className={`inline-flex min-w-[108px] items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+                                isAccredited(guest)
+                                  ? "cursor-not-allowed bg-green-500/10 text-green-400"
+                                  : "bg-[#d97706] text-[#0a0a0a] hover:bg-[#b45309] disabled:cursor-wait disabled:opacity-60"
+                              }`}
+                              aria-label={isAccredited(guest) ? `${guest.full_name} is already accredited` : `Accredit ${guest.full_name}`}
                             >
                               {isAccredited(guest) ? (
-                                <span className="text-green-400">✓</span>
+                                <>
+                                  <CheckCircle className="h-4 w-4" />
+                                  Accredited
+                                </>
+                              ) : accreditingTicket === guest.ticket_id ? (
+                                "Accrediting..."
                               ) : (
-                                <CheckCircle className="w-4 h-4" />
+                                <>
+                                  <CheckCircle className="h-4 w-4" />
+                                  Accredit
+                                </>
                               )}
                             </button>
                           </div>
