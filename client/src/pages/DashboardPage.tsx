@@ -182,19 +182,6 @@ export default function DashboardPage({
                 <Users className="w-4 h-4" /> Overview
               </Link>
               <Link
-                to="/admin/guests"
-                onClick={() => setSection("attendees")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors ${section === "attendees" ? "text-white bg-white/5" : ""}`}
-              >
-                <FileText className="w-4 h-4" /> Guests
-              </Link>
-              <Link
-                to="/admin/accredit"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
-              >
-                <Scan className="w-4 h-4" /> Accredit
-              </Link>
-              <Link
                 to="/admin/reports"
                 onClick={() => setSection("reports")}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors ${section === "reports" ? "text-white bg-white/5" : ""}`}
@@ -401,7 +388,7 @@ export default function DashboardPage({
                             </button>
                             <button
                               onClick={() => handleAccredit(guest.id)}
-                              className="p-2 text-gray-400 hover:text-green-400 transition-colors"
+                              className="p-2 bg-[#d97706] text-[#0a0a0a] rounded-lg text-sm font-medium hover:bg-[#b45309] transition-colors"
                               title={guest.accredited_at === 1 ? "Already accredited" : "Accredit Guest"}
                             >
                               {guest.accredited_at === 1 ? (

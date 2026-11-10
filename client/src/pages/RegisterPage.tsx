@@ -31,7 +31,7 @@ export default function RegistrationPage(): JSX.Element {
       <div className="relative flex-1 overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
           <img
-            src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+            src="/images/eventFlyer.jpeg"
             alt="Workers Ball 2026"
             className="w-full h-full object-cover object-center"
           />
