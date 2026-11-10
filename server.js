@@ -17,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Simple admin auth middleware
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@harvesters.org';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 function requireAuth(req, res, next) {
@@ -27,7 +28,7 @@ function requireAuth(req, res, next) {
   const base64Credentials = authHeader.split(' ')[1];
   const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
   const [username, password] = credentials.split(':');
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+  if ((username === ADMIN_USERNAME || username === ADMIN_EMAIL) && password === ADMIN_PASSWORD) {
     return next();
   }
   return res.status(401).json({ error: 'Invalid credentials' });
@@ -43,14 +44,21 @@ app.use('/api/tickets', require('./src/routes/tickets'));
 app.use('/api/import-export', require('./src/routes/import-export'));
 app.use('/api/reports', require('./src/routes/reports'));
 
-// Auth route for admin login
-app.post('/api/admin/login', (req, res) => {
-  const { username, password } = req.body;
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    const token = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
+// Auth routes for the admin client.
+app.post(['/api/admin/login', '/api/auth/login'], (req, res) => {
+  const username = req.body.email || req.body.username;
+  const { password } = req.body;
+  if ((username === ADMIN_USERNAME || username === ADMIN_EMAIL) && password === ADMIN_PASSWORD) {
+    const token = Buffer.from(`${ADMIN_USERNAME}:${password}`).toString('base64');
     return res.json({ success: true, token: `Basic ${token}` });
   }
   res.status(401).json({ error: 'Invalid credentials' });
+});
+
+app.get('/api/auth/me', requireAuth, (req, res) => {
+  const credentials = Buffer.from(req.headers.authorization.split(' ')[1], 'base64').toString('ascii');
+  const [username] = credentials.split(':');
+  res.json({ email: username.includes('@') ? username : ADMIN_EMAIL, role: 'admin' });
 });
 
 // Health check

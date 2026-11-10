@@ -36,6 +36,21 @@ router.get('/guest/:ticketId', async (req, res) => {
   }
 });
 
+router.get('/recent', async (req, res) => {
+  try {
+    const db = await getDb();
+    const result = db.exec(
+      `SELECT id, full_name, email, phone, ticket_id, accredited, accredited_at, ticket_sent_count
+       FROM guests WHERE accredited = 1 AND accredited_at IS NOT NULL
+       ORDER BY accredited_at DESC LIMIT 10`
+    );
+    res.json({ recent: rowsToObjects(result) });
+  } catch (err) {
+    console.error('Recent accreditations error:', err);
+    res.status(500).json({ error: 'Failed to load recent activity' });
+  }
+});
+
 router.post('/confirm/:ticketId', async (req, res) => {
   try {
     const db = await getDb();

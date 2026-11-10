@@ -42,7 +42,7 @@ router.get('/accreditation', async (req, res) => {
     const surgeHours = rowsToObjects(surgeResult);
 
     const recentResult = db.exec(`
-      SELECT full_name, email, ticket_id, accredited_at
+      SELECT id, full_name, email, ticket_id, accredited_at
       FROM guests WHERE accredited = 1 AND accredited_at IS NOT NULL
       ORDER BY accredited_at DESC LIMIT 20
     `);
@@ -95,7 +95,7 @@ router.get('/pdf', async (req, res) => {
     doc.text(eventName, pageWidth / 2, 25, { align: 'center' });
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
-    doc.text(`${eventDate} • ${venue}`, pageWidth / 2, 40, { align: 'center' });
+    doc.text(`${eventDate} | ${venue}`, pageWidth / 2, 40, { align: 'center' });
     doc.text('Accreditation Report', pageWidth / 2, 52, { align: 'center' });
 
     let y = 75;
@@ -121,16 +121,19 @@ router.get('/pdf', async (req, res) => {
     y += 10;
 
     if (surgeHours.length > 0) {
-      const surgeData = surgeHours.map((h, i) => [i + 1, `${String(h.hour).padStart(2, '0')}:00`, h.count]);
-      doc.autoTable({
-        startY: y,
-        head: [['Rank', 'Hour', 'Accreditations']],
-        body: surgeData,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 0, 0], textColor: [255, 215, 0] },
-        styles: { fontSize: 10, textColor: [0, 0, 0] }
+      doc.setFontSize(10);
+      doc.setTextColor(50, 50, 50);
+      doc.text('Rank', 20, y);
+      doc.text('Hour', 55, y);
+      doc.text('Accreditations', 100, y);
+      y += 7;
+      surgeHours.forEach((hour, index) => {
+        doc.text(String(index + 1), 20, y);
+        doc.text(`${String(hour.hour).padStart(2, '0')}:00`, 55, y);
+        doc.text(String(hour.count), 100, y);
+        y += 7;
       });
-      y = doc.lastAutoTable.finalY + 15;
+      y += 8;
     } else {
       doc.setFontSize(12);
       doc.setTextColor(100, 100, 100);
@@ -142,17 +145,22 @@ router.get('/pdf', async (req, res) => {
     doc.setTextColor(0, 0, 0);
     doc.text('Guest List & Accreditation Status', 20, y);
     y += 10;
-
-    const guestData = allGuests.map((g, i) => [i + 1, g.full_name, g.email || '-', g.ticket_id, g.accredited === 1 ? 'Accredited' : 'Pending', g.accredited_at ? g.accredited_at.substring(0, 16) : '-']);
-
-    doc.autoTable({
-      startY: y,
-      head: [['#', 'Full Name', 'Email', 'Ticket ID', 'Status', 'Accredited At']],
-      body: guestData,
-      theme: 'striped',
-      headStyles: { fillColor: [0, 0, 0], textColor: [255, 215, 0] },
-      styles: { fontSize: 8, cellPadding: 3, textColor: [0, 0, 0] },
-      columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 35 }, 2: { cellWidth: 40 }, 3: { cellWidth: 25 }, 4: { cellWidth: 25 }, 5: { cellWidth: 35 } }
+    doc.setFontSize(8);
+    doc.setTextColor(50, 50, 50);
+    allGuests.forEach((guest, index) => {
+      if (y > 275) {
+        doc.addPage();
+        y = 20;
+      }
+      const name = doc.splitTextToSize(`${index + 1}. ${guest.full_name}`, pageWidth - 40);
+      const details = doc.splitTextToSize(
+        `${guest.email || '-'} | ${guest.ticket_id} | ${guest.accredited === 1 ? 'Accredited' : 'Pending'} | ${guest.accredited_at || '-'}`,
+        pageWidth - 45
+      );
+      doc.text(name, 20, y);
+      y += name.length * 4;
+      doc.text(details, 25, y);
+      y += details.length * 4 + 3;
     });
 
     const fileName = `${eventName.replace(/\s+/g, '-')}-Accreditation-Report.pdf`;

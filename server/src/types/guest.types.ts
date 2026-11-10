@@ -27,6 +27,14 @@ export interface RegisterGuestBody {
   phone?: unknown;
 }
 
+export interface PublicRegistrationBody {
+  first_name?: unknown;
+  last_name?: unknown;
+  email?: unknown;
+  phone?: unknown;
+  attendance_status?: unknown;
+}
+
 // Shape of the PATCH /api/guests/:id request body.
 export interface UpdateGuestBody {
   first_name?: unknown;

@@ -1,6 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import {
-  BrowserRouter,
   Navigate,
   Route,
   Routes,
@@ -90,7 +89,8 @@ function Shell(): JSX.Element {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/accredit" element={<AccreditPage />} />
+        <Route path="/login" element={<AdminLogin onLoggedIn={setAdmin} />} />
         <Route path="/admin" element={<AdminLogin onLoggedIn={setAdmin} />} />
         <Route
           path="/dashboard"
@@ -119,16 +119,7 @@ function Shell(): JSX.Element {
             )
           }
         />
-        <Route
-          path="/admin/accredit"
-          element={
-            admin ? (
-              <AccreditPage onAuthExpired={handleAdminLogout} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+        <Route path="/admin/accredit" element={<Navigate to="/accredit" replace />} />
         <Route
           path="/admin/import-export"
           element={

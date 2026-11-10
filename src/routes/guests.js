@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { getDb, sqlEscape, rowsToObjects } = require('../db');
 const { generateQRPayload, generateTicketId } = require('../utils/qrcode-gen');
 
-// GET /api/guests — list with pagination, search, filter (VIEW ONLY - no edit/delete)
+// GET /api/guests — list with pagination, search, and filter.
 router.get('/', async (req, res) => {
   try {
     const db = await getDb();
@@ -93,6 +93,44 @@ router.post('/', async (req, res) => {
   }
 });
 
-// DELETE edit and update routes — REMOVED per requirements (no edit/delete allowed)
+// PATCH /api/guests/:id — update guest details (guests cannot be deleted).
+router.patch('/:id', async (req, res) => {
+  try {
+    const db = await getDb();
+    const { full_name, email, phone } = req.body;
+    if (typeof full_name !== 'string' || !full_name.trim()) {
+      return res.status(400).json({ error: 'full_name is required' });
+    }
+
+    const normalizedEmail = typeof email === 'string' && email.trim()
+      ? email.trim().toLowerCase()
+      : null;
+    if (normalizedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({ error: 'A valid email address is required' });
+    }
+
+    if (normalizedEmail) {
+      const existing = db.exec(
+        'SELECT id FROM guests WHERE email = ? AND id != ? LIMIT 1',
+        [normalizedEmail, req.params.id]
+      );
+      if (existing[0]?.values?.length) {
+        return res.status(409).json({ error: 'A guest with this email already exists' });
+      }
+    }
+
+    const now = new Date().toISOString();
+    db.run(
+      'UPDATE guests SET full_name = ?, email = ?, phone = ?, updated_at = ? WHERE id = ?',
+      [full_name.trim(), normalizedEmail, typeof phone === 'string' && phone.trim() ? phone.trim() : null, now, req.params.id]
+    );
+    const rows = rowsToObjects(db.exec('SELECT * FROM guests WHERE id = ?', [req.params.id]));
+    if (!rows.length) return res.status(404).json({ error: 'Guest not found' });
+    res.json({ guest: rows[0] });
+  } catch (err) {
+    console.error('Update guest error:', err);
+    res.status(500).json({ error: 'Failed to update guest' });
+  }
+});
 
 module.exports = router;

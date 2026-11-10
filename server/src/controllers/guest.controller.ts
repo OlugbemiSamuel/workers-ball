@@ -198,14 +198,14 @@ export const importGuestsHandler = (
 };
 
 // Public registration (no auth): POST /api/registration
-export const submitRegistrationHandler = (
+export const submitRegistrationHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
-): void => {
+  next: NextFunction,
+): Promise<void> => {
   try {
-    const { guest, created } = submitPublicRegistration(req.body);
-    res.status(created ? 201 : 200).json({ guest, created });
+    const result = await submitPublicRegistration(req.body);
+    res.status(result.created ? 201 : 200).json(result);
   } catch (err) {
     next(err);
   }

@@ -1,159 +1,196 @@
 import { useState } from "react";
-import { Mail, Phone } from "lucide-react";
-import { createGuest } from "@/api/guests.api.js";
+import axios from "axios";
+import { ArrowRight, CheckCircle2, Mail } from "lucide-react";
+import { registrationApi } from "@/services/api.js";
+import eventFlyer from "../images/eventFlyer.jpeg";
 
-export default function RegistrationPage(): JSX.Element {
-  const [form, setForm] = useState({ full_name: "", email: "", phone: "" });
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [message, setMessage] = useState('');
+type RegistrationStatus = "idle" | "loading" | "success" | "error";
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus('loading');
+export default function RegisterPage(): JSX.Element {
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "" });
+  const [status, setStatus] = useState<RegistrationStatus>("idle");
+  const [error, setError] = useState("");
+  const [guestId, setGuestId] = useState("");
+  const [ticketId, setTicketId] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [sendingAgain, setSendingAgain] = useState(false);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    event.preventDefault();
+    setStatus("loading");
+    setError("");
+    setEmailError("");
     try {
-      await createGuest({
-        first_name: form.full_name.split(' ')[0] || '',
-        last_name: form.full_name.split(' ').slice(1).join(' ') || '',
-        email: form.email || undefined,
-        phone: form.phone || undefined,
+      const data = await registrationApi.submit({
+        first_name: form.firstName.trim(),
+        last_name: form.lastName.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim() || undefined,
+        attendance_status: "yes",
       });
-      setStatus('success');
-      setMessage('Registration successful! Your ticket QR code will be sent to your email.');
-    } catch (err: any) {
-      setStatus('error');
-      setMessage(err.response?.data?.error || 'Registration failed. Please try again.');
+      setGuestId(String(data.guest.id));
+      setTicketId(data.guest.ticket_number || String(data.guest.id));
+      setEmailSent(data.email_sent);
+      if (!data.email_sent) {
+        setEmailError(data.email_error || "Your registration is saved, but we could not send the ticket email.");
+      }
+      setStatus("success");
+    } catch (submitError) {
+      setError(getRequestError(submitError, "Registration failed. Please try again."));
+      setStatus("error");
+    }
+  };
+
+  const handleResend = async (): Promise<void> => {
+    setSendingAgain(true);
+    setEmailError("");
+    try {
+      const data = await registrationApi.resend({
+        first_name: form.firstName.trim(),
+        last_name: form.lastName.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim() || undefined,
+        attendance_status: "yes",
+      }, guestId, ticketId);
+      setGuestId(String(data.guest.id));
+      setTicketId(data.guest.ticket_number || String(data.guest.id));
+      setEmailSent(data.email_sent);
+      if (!data.email_sent) {
+        setEmailError("We still could not send the ticket email. Please contact the event team.");
+      }
+    } catch (err) {
+      setEmailError(getRequestError(err, "We still could not send the ticket email. Please contact the event team."));
+    } finally {
+      setSendingAgain(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Background image - event flyer */}
-      <div className="relative flex-1 overflow-hidden">
-        <div className="absolute inset-0 w-full h-full">
-          <img
-            src="/images/eventFlyer.jpeg"
-            alt="Workers Ball 2026"
-            className="w-full h-full object-cover object-center"
-          />
-        </div>
-        <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-[#0a0a0a]/90 via-[#0a0a0a]/60 to-transparent" />
-        <div className="absolute inset-0 w-full h-full bg-[radial-gradient(circle_at_top_center,rgba(217,119,6,0.15)_0%,transparent_50%)]" />
-      </div>
+    <main className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#10100e] px-4 py-8 sm:px-6 sm:py-12">
+      <img
+        src={eventFlyer}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 -z-20 h-full w-full object-cover object-[center_30%] sm:object-center"
+      />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-black/85 via-black/65 to-[#251708]/75" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(217,119,6,0.22),transparent_58%)]" />
 
-      {/* Overlay content */}
-      <div className="relative z-10 flex-1 flex items-center justify-center px-6 py-12">
-        <div className="max-w-md w-full">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#d97706] text-[#0a0a0a] mb-4">
-              <span className="font-bold text-lg">WB</span>
-            </div>
-            <h1 className="text-4xl font-serif font-bold text-white mb-2 leading-tight">
-              Workers Ball 2026
-            </h1>
-            <p className="text-[#d97706] font-semibold tracking-wider uppercase text-sm">
-              Light of the Globe
-            </p>
-          </div>
+      <div className="w-full max-w-lg">
+        <header className="mb-6 text-center sm:mb-8">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#d97706] font-bold text-[#10100e] shadow-lg shadow-black/30">WB</div>
+          <h1 className="font-serif text-3xl font-bold leading-tight text-white sm:text-4xl">Workers Ball 2026</h1>
+          <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#f4b448]">Light of the Globe</p>
+        </header>
 
-          {/* Modern registration card */}
-          <div className="bg-white/95 backdrop-blur-md border border-white/30 rounded-2xl p-8 shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-[#0a0a0a]">Register to attend</h2>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-[#0a0a0a] mb-1.5">First name *</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 rounded-lg bg-white border border-[#d97706]/30 focus:border-[#d97706] focus:outline-none focus:ring-2 focus:ring-[#d97706]/20 text-[#0a0a0a]"
-                  placeholder="John"
-                  value={form.full_name.split(' ')[0] || ''}
-                  onChange={(e) => {
-                    const parts = form.full_name.split(' ');
-                    parts[0] = e.target.value;
-                    setForm({ ...form, full_name: parts.join(' ') });
-                  }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#0a0a0a] mb-1.5">Last name *</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 rounded-lg bg-white border border-[#d97706]/30 focus:border-[#d97706] focus:outline-none focus:ring-2 focus:ring-[#d97706]/20 text-[#0a0a0a]"
-                  placeholder="Doe"
-                  value={form.full_name.split(' ').slice(1).join(' ') || ''}
-                  onChange={(e) => {
-                    const parts = form.full_name.split(' ');
-                    parts[1] = e.target.value;
-                    setForm({ ...form, full_name: parts.join(' ') });
-                  }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#0a0a0a] mb-1.5">Email *</label>
-                <input
-                  type="email"
-                  className="w-full px-4 py-3 rounded-lg bg-white border border-[#d97706]/30 focus:border-[#d97706] focus:outline-none focus:ring-2 focus:ring-[#d97706]/20 text-[#0a0a0a]"
-                  placeholder="john@example.com"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#0a0a0a] mb-1.5">Phone number (optional)</label>
-                <input
-                  type="tel"
-                  className="w-full px-4 py-3 rounded-lg bg-white border border-[#d97706]/30 focus:border-[#d97706] focus:outline-none focus:ring-2 focus:ring-[#d97706]/20 text-[#0a0a0a]"
-                  placeholder="+234 800 000 0000"
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={status === 'loading'}
-                className="w-full bg-[#0a0a0a] hover:bg-[#1a1a1a] text-white py-4 rounded-lg font-semibold text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {status === 'loading' ? (
-                  <span className="flex items-center gap-2">Processing...</span>
+        <section className="rounded-2xl border border-white/40 bg-white/95 p-5 text-[#171714] shadow-2xl backdrop-blur-md sm:p-8">
+          {status === "success" ? (
+            <div className="py-2 text-center" aria-live="polite">
+              <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600" />
+              <h2 className="mt-4 font-serif text-2xl font-bold">Thank you, {form.firstName}!</h2>
+              <p className="mt-2 text-sm leading-6 text-gray-700">Your registration for Workers Ball 2026 is complete.</p>
+              <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-left">
+                <p className="flex items-center gap-2 font-semibold text-emerald-900"><Mail className="h-4 w-4" /> Check your email</p>
+                <p className="mt-2 break-all text-sm text-emerald-800">{form.email}</p>
+                {emailSent ? (
+                  <p className="mt-2 text-sm leading-5 text-emerald-800">Your ticket and QR code have been sent. If you don&apos;t see the email, please check your spam or junk folder.</p>
                 ) : (
-                  <span>Complete registration</span>
+                  <div className="mt-2 text-sm leading-5 text-amber-900">
+                    <p>{emailError || "Your ticket email could not be sent yet."}</p>
+                    <button type="button" onClick={() => void handleResend()} disabled={sendingAgain} className="mt-3 rounded-lg bg-[#173c30] px-4 py-2 font-semibold text-white hover:bg-[#0f3025] disabled:opacity-60">
+                      {sendingAgain ? "Sending..." : "Try sending ticket again"}
+                    </button>
+                  </div>
                 )}
+              </div>
+              <p className="mt-4 text-xs text-gray-600">Ticket reference: <span className="font-mono font-semibold">{ticketId}</span></p>
+              <button type="button" onClick={() => {
+                setForm({ firstName: "", lastName: "", email: "", phone: "" });
+                setGuestId("");
+                setTicketId("");
+                setEmailSent(false);
+                setEmailError("");
+                setStatus("idle");
+              }} className="mt-6 text-sm font-semibold text-[#9a5600] underline decoration-[#9a5600]/50 underline-offset-4 hover:text-[#6f3c00]">
+                Register another guest
               </button>
-            </form>
-
-            {status === 'success' && (
-              <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-600 text-sm flex items-center gap-3">
-                <span className="w-5 h-5">✓</span>
-                <span>{message}</span>
+            </div>
+          ) : (
+            <>
+              <div className="mb-6">
+                <h2 className="font-serif text-xl font-bold sm:text-2xl">Register to attend</h2>
+                <p className="mt-1 text-sm text-gray-600">Complete your details to receive your event ticket by email.</p>
               </div>
-            )}
-            {status === 'error' && (
-              <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-600 text-sm flex items-center gap-3">
-                <span className="w-5 h-5">⚠</span>
-                <span>{message}</span>
-              </div>
-            )}
-          </div>
 
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500">
-              22nd Nov. 2026 • 4PM
-            </p>
-            <p className="text-sm text-gray-500">
-              Harvesters Globe Ologolo
-            </p>
-          </div>
-        </div>
+              {error && <div role="alert" className="mb-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="block text-sm font-medium text-gray-800">
+                    First name *
+                    <input
+                      type="text"
+                      autoComplete="given-name"
+                      value={form.firstName}
+                      onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))}
+                      className="mt-1.5 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-[#d97706] focus:ring-2 focus:ring-[#d97706]/20"
+                      required
+                    />
+                  </label>
+                  <label className="block text-sm font-medium text-gray-800">
+                    Last name *
+                    <input
+                      type="text"
+                      autoComplete="family-name"
+                      value={form.lastName}
+                      onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))}
+                      className="mt-1.5 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-[#d97706] focus:ring-2 focus:ring-[#d97706]/20"
+                      required
+                    />
+                  </label>
+                </div>
+                <label className="block text-sm font-medium text-gray-800">
+                  Email *
+                  <input
+                    type="email"
+                    autoComplete="email"
+                    value={form.email}
+                    onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+                    className="mt-1.5 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-[#d97706] focus:ring-2 focus:ring-[#d97706]/20"
+                    required
+                  />
+                </label>
+                <label className="block text-sm font-medium text-gray-800">
+                  Phone number <span className="font-normal text-gray-500">(optional)</span>
+                  <input
+                    type="tel"
+                    autoComplete="tel"
+                    value={form.phone}
+                    onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
+                    className="mt-1.5 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-[#d97706] focus:ring-2 focus:ring-[#d97706]/20"
+                    placeholder="+234 800 000 0000"
+                  />
+                </label>
+                <button type="submit" disabled={status === "loading"} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#171714] px-5 py-3.5 font-semibold text-white transition hover:bg-[#30291e] disabled:cursor-not-allowed disabled:opacity-60">
+                  {status === "loading" ? "Completing registration..." : <>Complete registration <ArrowRight className="h-4 w-4" /></>}
+                </button>
+              </form>
+            </>
+          )}
+        </section>
+
+        <p className="mt-5 text-center text-sm font-medium text-white/90">22nd Nov. 2026 · 4PM</p>
+        <p className="mt-1 text-center text-sm text-white/75">Harvesters Globe Ologolo</p>
       </div>
-    </div>
+    </main>
   );
 }
+
+const getRequestError = (err: unknown, fallback: string): string => {
+  if (axios.isAxiosError(err)) {
+    const message = err.response?.data?.message || err.response?.data?.error;
+    if (typeof message === "string") return message;
+  }
+  return err instanceof Error ? err.message : fallback;
+};

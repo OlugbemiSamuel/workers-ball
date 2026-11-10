@@ -15,6 +15,7 @@ import {
 } from "../repositories/guest.repository.js";
 import type {
   AttendanceStatus,
+  CreateGuestInput,
   Guest,
   PublicRegistrationBody,
   RegisterGuestBody,
@@ -201,9 +202,22 @@ export const searchGuests = (rawQuery: unknown): Guest[] => {
   return findGuestsByQuery(query);
 };
 
+export const getGuestByTicket = (rawTicket: unknown): Guest => {
+  if (typeof rawTicket !== "string" || rawTicket.trim() === "") {
+    throw new ValidationError("Ticket number is required");
+  }
+  const ticket = rawTicket.trim();
+  if (QR_TOKEN_PATTERN.test(ticket)) {
+    return getGuestByQrToken(ticket);
+  }
+  const guest = searchGuests(ticket).find((candidate) => candidate.ticket_number === ticket);
+  if (!guest) throw new NotFoundError();
+  return guest;
+};
+
 export const submitPublicRegistration = async (
   body: PublicRegistrationBody,
-): Promise<{ guest: Guest; created: boolean }> => {
+): Promise<{ guest: Guest; created: boolean; email_sent: boolean }> => {
   const record = body as Record<string, unknown>;
   const first_name = normalizeFirstName(readField(record, "first_name"));
   const last_name = normalizeLastName(readField(record, "last_name"));
@@ -218,26 +232,22 @@ export const submitPublicRegistration = async (
     throw new ValidationError('attendance_status must be "yes" or "no"');
   }
 
-  const existing = findGuestByEmail(email);
-  const mailTicket = async (guest: Guest): Promise<Guest> => {
+  const mailTicket = async (
+    guest: Guest,
+  ): Promise<{ guest: Guest; email_sent: boolean }> => {
     const ticketed = generateTicketCredentials(guest.id) ?? guest;
     try {
       await sendTicketEmail(ticketed);
     } catch (err) {
       console.error(`Registration email failed for guest ${guest.id}:`, (err as Error).message);
+      return { guest: ticketed, email_sent: false };
     }
-    return ticketed;
-  };
-  if (existing) {
-    const updated = persistGuestUpdate(existing.id, {
-      first_name,
-      last_name,
-      email,
-      phone,
-      attendance_status,
-    });
+    const updated = markTicketSent(guest.id);
     if (!updated) throw new NotFoundError();
-    return { guest: await mailTicket(updated), created: false };
+    return { guest: updated, email_sent: true };
+  };
+  if (findGuestByEmail(email)) {
+    throw new ConflictError("This email is already registered. Please use another email or contact the event team.");
   }
 
   try {
@@ -248,21 +258,15 @@ export const submitPublicRegistration = async (
       phone,
       attendance_status,
     });
-    return { guest: await mailTicket(created), created: true };
+    return { ...(await mailTicket(created)), created: true };
   } catch (err) {
     if (!(err instanceof Error && err.message.includes("UNIQUE"))) throw err;
     // Race: someone registered this email a split second ago.
     const raced = findGuestByEmail(email);
-    if (!raced) throw err;
-    const updated = persistGuestUpdate(raced.id, {
-      first_name,
-      last_name,
-      email,
-      phone,
-      attendance_status,
-    });
-    if (!updated) throw new NotFoundError();
-    return { guest: await mailTicket(updated), created: false };
+    if (raced) {
+      throw new ConflictError("This email is already registered. Please use another email or contact the event team.");
+    }
+    throw err;
   }
 };
 

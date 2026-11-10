@@ -9,6 +9,7 @@ import { publicTicketHandler } from "./controllers/guest.controller.js";
 import { authRouter } from "./routes/auth.routes.js";
 import { guestRouter } from "./routes/guest.routes.js";
 import { statsRouter } from "./routes/stats.routes.js";
+import { accreditRouter } from "./routes/accredit.routes.js";
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/guests", guestRouter);
 // Admin authentication (Chunk 5): POST /api/auth/login, GET /api/auth/me.
 app.use("/api/auth", authRouter);
 app.use("/api/guests/stats", statsRouter);
+app.use("/api/accredit", accreditRouter);
 
 // Public registration (Chunk 3): POST /api/registration.
 // No requireAuth: guests register themselves.

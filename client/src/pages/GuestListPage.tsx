@@ -32,10 +32,10 @@ export default function GuestListPage() {
     fetchGuests();
   }, [fetchGuests]);
 
-  const handleSendTicket = async (ticketId: string) => {
+  const handleSendTicket = async (guestId: string, ticketId: string) => {
     setSending(ticketId);
     try {
-      await ticketApi.send(ticketId);
+      await ticketApi.send(guestId, ticketId);
       fetchGuests();
     } catch (err: any) {
       alert(err.response?.data?.error || 'Failed to send ticket');
@@ -153,7 +153,7 @@ export default function GuestListPage() {
                   <td className="py-4 pl-4 text-right">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleSendTicket(guest.ticket_id)}
+                        onClick={() => handleSendTicket(guest.id, guest.ticket_id)}
                         disabled={sending === guest.ticket_id}
                         className="p-2 text-gray-400 hover:text-gold-400 transition-colors"
                         title="Send Ticket Email"

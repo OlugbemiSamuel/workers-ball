@@ -37,7 +37,7 @@ export const apiFetch = async <T>(path: string, options: ApiOptions = {}): Promi
   if (options.auth !== false) {
     const token = getToken();
     if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
+      headers["Authorization"] = token.startsWith("Basic ") ? token : `Bearer ${token}`;
     }
   }
   const res = await fetch(path, {

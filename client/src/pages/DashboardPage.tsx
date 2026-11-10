@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Search, Users, CheckCircle, Clock, Mail, Activity, Plus, FileText, Download, Scan, LogOut, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Search, Users, CheckCircle, Mail, Activity, Plus, FileText, Download, LogOut, X, Menu, Upload } from "lucide-react";
 import { guestApi, ticketApi, type Guest } from "@/services/api.js";
 
 type Section = "overview" | "attendees" | "reports" | "settings";
@@ -16,19 +16,17 @@ export default function DashboardPage({
   onLogout,
   initialSection = "overview",
 }: DashboardPageProps): JSX.Element {
-  const navigate = useNavigate();
   const [guests, setGuests] = useState<Guest[]>([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
   const [search, setSearch] = useState("");
   const [accreditedFilter, setAccreditedFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [section, setSection] = useState<Section>(initialSection);
-  const [sendingBatch, setSendingBatch] = useState(false);
-  const [sendingRsvp, setSendingRsvp] = useState<string | null>(null);
   const [sendingTicket, setSendingTicket] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editing, setEditing] = useState<Guest | null>(null);
-  const [importing, setImporting] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -53,19 +51,19 @@ export default function DashboardPage({
     }
   };
 
-  const handleCreateGuest = async (e: React.FormEvent) => {
+  const handleCreateGuest = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const first_name = formData.get("first_name") as string;
+    const full_name = String(formData.get("full_name") || "").trim();
     const email = formData.get("email") as string;
     const phone = formData.get("phone") as string;
-    if (!first_name) return;
+    if (!full_name) return;
     setCreating(true);
     try {
-      await guestApi.create({ full_name: first_name, email: email || undefined, phone: phone || undefined });
+      await guestApi.create({ full_name, email: email || undefined, phone: phone || undefined });
       setNotice("Guest created successfully");
-      loadGuests();
-      (e.currentTarget as HTMLFormElement).reset();
+      setCreateModalOpen(false);
+      await loadGuests();
     } catch (err: any) {
       setNotice(err.response?.data?.error || "Failed to create guest");
     } finally {
@@ -73,23 +71,23 @@ export default function DashboardPage({
     }
   };
 
-  const handleEditGuest = async (e: React.FormEvent) => {
+  const handleEditGuest = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editing) return;
     const formData = new FormData(e.currentTarget);
-    const first_name = formData.get("first_name") as string;
+    const full_name = String(formData.get("full_name") || "").trim();
     const email = formData.get("email") as string;
     const phone = formData.get("phone") as string;
-    setCreating(true); // reuse creating state for loading
+    setCreating(true);
     try {
       await guestApi.update(editing.id, {
-        full_name: first_name || undefined,
-        email: email || undefined,
-        phone: phone || undefined,
+        full_name,
+        email,
+        phone,
       });
       setNotice("Guest updated successfully");
       setEditing(null);
-      loadGuests();
+      await loadGuests();
     } catch (err: any) {
       setNotice(err.response?.data?.error || "Failed to update guest");
     } finally {
@@ -97,10 +95,10 @@ export default function DashboardPage({
     }
   };
 
-  const handleSendTicket = async (ticketId: string) => {
+  const handleSendTicket = async (guestId: string, ticketId: string) => {
     setSendingTicket(ticketId);
     try {
-      await ticketApi.send(ticketId);
+      await ticketApi.send(guestId, ticketId);
       setNotice("Ticket email sent");
       loadGuests();
     } catch (err: any) {
@@ -110,11 +108,11 @@ export default function DashboardPage({
     }
   };
 
-  const handleAccredit = async (guestId: string) => {
+  const handleAccredit = async (ticketId: string) => {
     try {
-      await guestApi.confirm(guestId);
+      await guestApi.confirm(ticketId);
       setNotice("Guest accredited");
-      loadGuests();
+      await loadGuests();
     } catch (err: any) {
       if (err.response?.status === 409) {
         setNotice("This guest has already been accredited");
@@ -129,8 +127,8 @@ export default function DashboardPage({
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     return guestList.filter((g) => {
-      if (accreditedFilter === "true" && !g.accredited_at) return false;
-      if (accreditedFilter === "false" && g.accredited_at) return false;
+      if (accreditedFilter === "true" && !isAccredited(g)) return false;
+      if (accreditedFilter === "false" && isAccredited(g)) return false;
       if (!q) return true;
       return [
         g.full_name,
@@ -148,11 +146,11 @@ export default function DashboardPage({
   );
 
   const stats = useMemo(() => ({
-    total: guestList.length,
-    accredited: guestList.filter((g) => g.accredited_at).length,
-    pending: guestList.filter((g) => !g.accredited_at).length,
+    total: paginationResolved.total,
+    accredited: guestList.filter(isAccredited).length,
+    pending: guestList.filter((g) => !isAccredited(g)).length,
     ticketsSent: guestList.reduce((sum, g) => sum + (g.ticket_sent_count || 0), 0),
-  }), [guestList]);
+  }), [guestList, paginationResolved.total]);
 
   const handleExport = () => {
     setNotice("Export functionality available via server endpoint");
@@ -160,49 +158,54 @@ export default function DashboardPage({
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
-      {/* Top nav */}
-      <nav className="border-b border-white/10 bg-[#1a1a1a]/80 backdrop-blur sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#d97706] flex items-center justify-center text-[#0a0a0a] font-bold text-sm">
-                WB
-              </div>
-              <span className="font-serif font-bold text-xl text-white tracking-tight">
-                Workers Ball 2026
-              </span>
-            </div>
-
-            <div className="hidden md:flex items-center gap-6">
-              <Link
-                to="/dashboard"
-                onClick={() => setSection("overview")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors ${section === "overview" ? "text-white bg-white/5" : ""}`}
-              >
-                <Users className="w-4 h-4" /> Overview
-              </Link>
-              <Link
-                to="/admin/reports"
-                onClick={() => setSection("reports")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors ${section === "reports" ? "text-white bg-white/5" : ""}`}
-              >
-                <Activity className="w-4 h-4" /> Reports
-              </Link>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onLogout}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
-              >
-                <LogOut className="w-4 h-4" /> Logout
-              </button>
-            </div>
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation menu"
+          className="fixed inset-0 z-40 bg-black/60 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <aside className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/10 bg-[#141414] transition-transform md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d97706] text-sm font-bold text-[#0a0a0a]">WB</div>
+            <span className="font-serif text-lg font-bold tracking-tight">Workers Ball</span>
           </div>
+          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white md:hidden" aria-label="Close menu">
+            <X className="h-5 w-5" />
+          </button>
         </div>
-      </nav>
+        <nav className="flex-1 space-y-1 p-4" aria-label="Admin navigation">
+          <Link to="/dashboard" onClick={() => { setSection("overview"); setSidebarOpen(false); }} className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors ${section === "overview" ? "bg-[#d97706]/15 text-[#fbbf24]" : "text-gray-300 hover:bg-white/5 hover:text-white"}`}>
+            <Users className="h-5 w-5" /> Overview
+          </Link>
+          <Link to="/admin/guests" onClick={() => { setSection("attendees"); setSidebarOpen(false); }} className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors ${section === "attendees" ? "bg-[#d97706]/15 text-[#fbbf24]" : "text-gray-300 hover:bg-white/5 hover:text-white"}`}>
+            <FileText className="h-5 w-5" /> Guests
+          </Link>
+          <Link to="/admin/reports" onClick={() => { setSection("reports"); setSidebarOpen(false); }} className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors ${section === "reports" ? "bg-[#d97706]/15 text-[#fbbf24]" : "text-gray-300 hover:bg-white/5 hover:text-white"}`}>
+            <Activity className="h-5 w-5" /> Reports
+          </Link>
+          <Link to="/admin/import-export" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-gray-300 transition-colors hover:bg-white/5 hover:text-white">
+            <Upload className="h-5 w-5" /> Import / Export
+          </Link>
+        </nav>
+        <div className="border-t border-white/10 p-4">
+          <p className="mb-3 truncate px-3 text-xs text-gray-500">{admin.email}</p>
+          <button onClick={onLogout} className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10">
+            <LogOut className="h-5 w-5" /> Logout
+          </button>
+        </div>
+      </aside>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="min-h-screen md:pl-64">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/10 bg-[#111111]/95 px-4 backdrop-blur md:hidden">
+          <button type="button" onClick={() => setSidebarOpen(true)} className="rounded-lg border border-white/10 p-2 text-white hover:bg-white/5" aria-label="Open navigation menu">
+            <Menu className="h-5 w-5" />
+          </button>
+          <span className="font-semibold">{sectionTitle(section).title}</span>
+        </header>
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-serif font-bold text-[#d97706]">{sectionTitle(section).title}</h1>
@@ -254,12 +257,6 @@ export default function DashboardPage({
                   <FileText className="w-4 h-4" /> Manage Guests
                 </button>
                 <button
-                  onClick={() => navigate("/admin/accredit")}
-                  className="flex items-center gap-2 px-4 py-3 bg-[#0a0a0a] border border-white/20 text-white rounded-lg font-semibold hover:bg-[#1a1a1a] transition-colors"
-                >
-                  <Scan className="w-4 h-4" /> Accredit Guests
-                </button>
-                <button
                   onClick={() => setSection("reports")}
                   className="flex items-center gap-2 px-4 py-3 bg-[#0a0a0a] border border-white/20 text-white rounded-lg font-semibold hover:bg-[#1a1a1a] transition-colors"
                 >
@@ -279,7 +276,7 @@ export default function DashboardPage({
         {section === "attendees" && (
           <>
             <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-6 mb-6">
-              <div className="flex flex-col md:flex-row gap-4 items-end">
+              <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-end">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
                   <input
@@ -300,16 +297,17 @@ export default function DashboardPage({
                   <option value="false">Not Accredited</option>
                 </select>
                 <button
-                  onClick={handleCreateGuest}
-                  className="flex items-center gap-2 gold-gradient px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all"
+                  type="button"
+                  onClick={() => setCreateModalOpen(true)}
+                  className="flex items-center justify-center gap-2 gold-gradient px-4 py-3 rounded-lg text-sm font-semibold hover:opacity-90 transition-all"
                 >
                   <Plus className="w-4 h-4" /> Add Guest
                 </button>
               </div>
             </div>
 
-            <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
-              <table className="w-full text-left border-collapse">
+            <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-x-auto">
+              <table className="w-full min-w-[850px] text-left border-collapse">
                 <thead>
                   <tr className="border-b border-white/10 text-gray-400 text-sm uppercase">
                     <th className="pb-4 pl-4">Guest</th>
@@ -350,12 +348,12 @@ export default function DashboardPage({
                         <td className="py-4 pl-4">
                           <span
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                              guest.accredited_at === 1
+                              isAccredited(guest)
                                 ? "bg-green-500/10 text-green-400 border border-green-500/20"
                                 : "bg-[#d97706]/10 text-[#d97706] border border-[#d97706]/20"
                             }`}
                           >
-                            {guest.accredited_at === 1 ? (
+                            {isAccredited(guest) ? (
                               <>
                                 <CheckCircle className="w-3 h-3" /> Accredited
                               </>
@@ -368,7 +366,7 @@ export default function DashboardPage({
                         <td className="py-4 pl-4 text-right">
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => handleSendTicket(guest.ticket_id)}
+                              onClick={() => handleSendTicket(guest.id, guest.ticket_id)}
                               disabled={sendingTicket === guest.ticket_id}
                               className="p-2 text-gray-400 hover:text-[#d97706] transition-colors"
                               title="Send Ticket Email"
@@ -387,11 +385,12 @@ export default function DashboardPage({
                               <FileText className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => handleAccredit(guest.id)}
-                              className="p-2 bg-[#d97706] text-[#0a0a0a] rounded-lg text-sm font-medium hover:bg-[#b45309] transition-colors"
-                              title={guest.accredited_at === 1 ? "Already accredited" : "Accredit Guest"}
+                              onClick={() => handleAccredit(guest.ticket_id)}
+                              disabled={isAccredited(guest)}
+                              className="p-2 bg-[#d97706] text-[#0a0a0a] rounded-lg text-sm font-medium hover:bg-[#b45309] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                              title={isAccredited(guest) ? "Already accredited" : "Accredit Guest"}
                             >
-                              {guest.accredited_at === 1 ? (
+                              {isAccredited(guest) ? (
                                 <span className="text-green-400">✓</span>
                               ) : (
                                 <CheckCircle className="w-4 h-4" />
@@ -477,6 +476,40 @@ export default function DashboardPage({
             </button>
           </div>
         )}
+        {createModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4">
+            <div className="my-auto w-full max-w-md rounded-xl border border-white/20 bg-[#1a1a1a] p-6 shadow-2xl">
+              <div className="mb-5 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-[#d97706]">Add Guest</h3>
+                <button type="button" onClick={() => setCreateModalOpen(false)} className="text-gray-400 hover:text-white" aria-label="Close add guest form">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <form onSubmit={handleCreateGuest} className="space-y-4">
+                <div>
+                  <label htmlFor="create-guest-name" className="mb-1.5 block text-sm font-medium text-gray-300">Full name *</label>
+                  <input id="create-guest-name" name="full_name" autoFocus required className="w-full rounded-lg border border-white/20 bg-[#0a0a0a] px-4 py-3 text-white focus:border-[#d97706] focus:outline-none" />
+                </div>
+                <div>
+                  <label htmlFor="create-guest-email" className="mb-1.5 block text-sm font-medium text-gray-300">Email</label>
+                  <input id="create-guest-email" name="email" type="email" className="w-full rounded-lg border border-white/20 bg-[#0a0a0a] px-4 py-3 text-white focus:border-[#d97706] focus:outline-none" />
+                </div>
+                <div>
+                  <label htmlFor="create-guest-phone" className="mb-1.5 block text-sm font-medium text-gray-300">Phone</label>
+                  <input id="create-guest-phone" name="phone" type="tel" className="w-full rounded-lg border border-white/20 bg-[#0a0a0a] px-4 py-3 text-white focus:border-[#d97706] focus:outline-none" />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button type="submit" disabled={creating} className="flex-1 rounded-lg bg-[#d97706] py-3 font-semibold text-[#0a0a0a] hover:bg-[#b45309] disabled:opacity-50">
+                    {creating ? "Adding..." : "Add Guest"}
+                  </button>
+                  <button type="button" onClick={() => setCreateModalOpen(false)} className="flex-1 rounded-lg border border-white/20 bg-[#0a0a0a] py-3 font-semibold text-white hover:bg-[#2a2a2a]">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
         {editing && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-[#1a1a1a] border border-white/20 rounded-xl p-6 shadow-2xl max-w-md w-full">
@@ -491,18 +524,20 @@ export default function DashboardPage({
               </div>
               <form onSubmit={handleEditGuest} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Full Name</label>
+                  <label htmlFor="edit-guest-name" className="block text-sm font-medium text-gray-300 mb-1.5">Full Name</label>
                   <input
+                    id="edit-guest-name"
                     type="text"
-                    name="first_name"
+                    name="full_name"
                     className="w-full px-4 py-3 rounded-lg bg-[#0a0a0a] border border-white/20 focus:border-[#d97706] focus:outline-none text-white"
                     defaultValue={editing?.full_name}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
+                  <label htmlFor="edit-guest-email" className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
                   <input
+                    id="edit-guest-email"
                     type="email"
                     name="email"
                     className="w-full px-4 py-3 rounded-lg bg-[#0a0a0a] border border-white/20 focus:border-[#d97706] focus:outline-none text-white"
@@ -510,8 +545,9 @@ export default function DashboardPage({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Phone</label>
+                  <label htmlFor="edit-guest-phone" className="block text-sm font-medium text-gray-300 mb-1.5">Phone</label>
                   <input
+                    id="edit-guest-phone"
                     type="tel"
                     name="phone"
                     className="w-full px-4 py-3 rounded-lg bg-[#0a0a0a] border border-white/20 focus:border-[#d97706] focus:outline-none text-white"
@@ -538,10 +574,14 @@ export default function DashboardPage({
             </div>
           </div>
         )}
+      </main>
       </div>
     </div>
   );
 }
+
+const isAccredited = (guest: Guest): boolean =>
+  guest.accredited === 1 || Boolean(guest.accredited_at);
 
 const sectionTitle = (section: string) => {
   const titles: Record<string, { title: string; hint: string }> = {

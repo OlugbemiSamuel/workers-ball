@@ -1,8 +1,6 @@
-import dotenv from "dotenv";
+import "dotenv/config";
 import app from "./app.js";
 import { initDb } from "./db/connection.js";
-
-dotenv.config();
 
 // Learn: PORT comes from environment, not hardcoded.
 // This lets cPanel/Namecheap use a different port in production.

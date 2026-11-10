@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Shield, Mail, Lock, ArrowRight } from "lucide-react";
 import { login } from "@/api/auth.api.js";
+import type { AuthAdmin } from "@/types/auth.types.js";
 
 export default function LoginPage({
   onLoggedIn,
 }: {
-  onLoggedIn: (a: { email: string; role: string }) => void;
+  onLoggedIn: (a: AuthAdmin) => void;
 }): JSX.Element {
   const [form, setForm] = useState({ email: "admin@harvesters.org", password: "Admin123!" });
   const [loading, setLoading] = useState(false);
