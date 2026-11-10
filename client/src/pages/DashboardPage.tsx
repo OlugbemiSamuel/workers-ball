@@ -124,9 +124,10 @@ export default function DashboardPage({
     }
   };
 
+  const guestList = guests || [];
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return guests.filter((g) => {
+    return guestList.filter((g) => {
       if (accreditedFilter === "true" && !g.accredited_at) return false;
       if (accreditedFilter === "false" && g.accredited_at) return false;
       if (!q) return true;
@@ -137,7 +138,7 @@ export default function DashboardPage({
         g.ticket_id,
       ].join(" ").toLowerCase().includes(q);
     });
-  }, [guests, search, accreditedFilter]);
+  }, [guestList, search, accreditedFilter]);
 
   const totalPages = Math.max(1, Math.ceil(visible.length / pagination.limit));
   const pageGuests = visible.slice(
@@ -146,11 +147,11 @@ export default function DashboardPage({
   );
 
   const stats = useMemo(() => ({
-    total: guests.length,
-    accredited: guests.filter((g) => g.accredited_at).length,
-    pending: guests.filter((g) => !g.accredited_at).length,
-    ticketsSent: guests.reduce((sum, g) => sum + (g.ticket_sent_count || 0), 0),
-  }), [guests]);
+    total: guestList.length,
+    accredited: guestList.filter((g) => g.accredited_at).length,
+    pending: guestList.filter((g) => !g.accredited_at).length,
+    ticketsSent: guestList.reduce((sum, g) => sum + (g.ticket_sent_count || 0), 0),
+  }), [guestList]);
 
   const handleExport = () => {
     setNotice("Export functionality available via server endpoint");
@@ -250,7 +251,7 @@ export default function DashboardPage({
               <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-5">
                 <p className="text-sm text-gray-400 uppercase tracking-wider mb-1">Accreditation Rate</p>
                 <h3 className="text-2xl font-bold text-purple-400">
-                  {guests.length > 0 ? Math.round((stats.accredited / guests.length) * 100) : 0}%
+                  {guestList.length > 0 ? Math.round((stats.accredited / guestList.length) * 100) : 0}%
                 </h3>
               </div>
             </div>

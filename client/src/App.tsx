@@ -112,7 +112,7 @@ function Shell(): JSX.Element {
               <DashboardPage
                 admin={admin}
                 onLogout={handleAdminLogout}
-                initialSection="guests"
+                initialSection="attendees"
               />
             ) : (
               <Navigate to="/login" replace />

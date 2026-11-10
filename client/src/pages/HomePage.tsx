@@ -1,10 +1,12 @@
+import eventFlyer from ".././images/eventFlyer.jpeg";
+
 export default function HomePage(): JSX.Element {
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Event flyer background */}
       <div className="absolute inset-0 w-full h-full">
         <img
-          src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+          src={eventFlyer}
           alt="Workers Ball 2026"
           className="w-full h-full object-cover"
         />
@@ -29,16 +31,36 @@ export default function HomePage(): JSX.Element {
             <div className="flex flex-col items-center gap-2 text-sm text-gray-400">
               <div className="flex items-center gap-1.5 whitespace-nowrap">
                 <span className="flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
                   </svg>
                 </span>
                 <span>22nd Nov. 2026 • 4PM</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.828a4 4 0 01-5.657 0L5.171 16.657a4 4 0 010-5.657l1.414-1.414a2 2 0 012.828 0L12 15.586l1.414-1.414a2 2 0 012.828 0l1.414 1.414a2 2 0 010 2.828z" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M17.657 16.657L13.414 20.828a4 4 0 01-5.657 0L5.171 16.657a4 4 0 010-5.657l1.414-1.414a2 2 0 012.828 0L12 15.586l1.414-1.414a2 2 0 012.828 0l1.414 1.414a2 2 0 010 2.828z"
+                    />
                   </svg>
                 </span>
                 <span>Harvesters Globe Ologolo</span>

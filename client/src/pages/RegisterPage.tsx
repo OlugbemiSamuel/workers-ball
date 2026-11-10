@@ -12,7 +12,8 @@ export default function RegistrationPage(): JSX.Element {
     setStatus('loading');
     try {
       await createGuest({
-        full_name: form.full_name,
+        first_name: form.full_name.split(' ')[0] || '',
+        last_name: form.full_name.split(' ').slice(1).join(' ') || '',
         email: form.email || undefined,
         phone: form.phone || undefined,
       });
