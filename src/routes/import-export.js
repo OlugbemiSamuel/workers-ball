@@ -4,7 +4,7 @@ const XLSX = require('xlsx');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const { getDb } = require('../db');
+const { getDb, sqlEscape, rowsToObjects } = require('../db');
 const { generateTicketId, generateQRPayload } = require('../utils/qrcode-gen');
 
 const router = express.Router();
@@ -65,11 +65,12 @@ router.get('/export', async (req, res) => {
     const db = await getDb();
     const { format = 'xlsx', accredited } = req.query;
 
-    let where = '', params = [];
+    let where = '';
     if (accredited === 'true') where = 'WHERE accredited = 1';
     else if (accredited === 'false') where = 'WHERE accredited = 0';
 
-    const rows = db.prepare(`SELECT * FROM guests ${where} ORDER BY created_at DESC`).all(params);
+    const result = db.exec(`SELECT * FROM guests ${where} ORDER BY created_at DESC`);
+    const rows = rowsToObjects(result);
 
     const exportData = rows.map(r => ({
       'Ticket ID': r.ticket_id, 'Full Name': r.full_name, Email: r.email || '',

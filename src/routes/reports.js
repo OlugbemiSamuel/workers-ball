@@ -1,27 +1,33 @@
 const express = require('express');
 const router = express.Router();
 const { jsPDF } = require('jspdf');
-const { getDb } = require('../db');
+const { getDb, sqlEscape, rowsToObjects } = require('../db');
 
 router.get('/accreditation', async (req, res) => {
   try {
     const db = await getDb();
-    const total = db.prepare('SELECT COUNT(*) as c FROM guests').get([]).c;
-    const accredited = db.prepare("SELECT COUNT(*) as c FROM guests WHERE accredited = 1").get([]).c;
+    const totalResult = db.exec('SELECT COUNT(*) as c FROM guests');
+    const total = totalResult[0]?.values?.[0]?.[0] || 0;
+
+    const accreditedResult = db.exec("SELECT COUNT(*) as c FROM guests WHERE accredited = 1");
+    const accredited = accreditedResult[0]?.values?.[0]?.[0] || 0;
+
     const pending = total - accredited;
     const percentage = total > 0 ? Math.round((accredited / total) * 100) : 0;
 
-    const surgeHours = db.prepare(`
+    const surgeResult = db.exec(`
       SELECT CAST(strftime('%H', accredited_at) AS INTEGER) as hour, COUNT(*) as count
       FROM guests WHERE accredited = 1 AND accredited_at IS NOT NULL
       GROUP BY hour ORDER BY count DESC, hour ASC
-    `).all([]);
+    `);
+    const surgeHours = rowsToObjects(surgeResult);
 
-    const recent = db.prepare(`
+    const recentResult = db.exec(`
       SELECT full_name, email, ticket_id, accredited_at
       FROM guests WHERE accredited = 1 AND accredited_at IS NOT NULL
       ORDER BY accredited_at DESC LIMIT 20
-    `).all([]);
+    `);
+    const recent = rowsToObjects(recentResult);
 
     res.json({
       event: process.env.EVENT_NAME || 'Workers Ball 2026',
@@ -37,18 +43,24 @@ router.get('/accreditation', async (req, res) => {
 router.get('/pdf', async (req, res) => {
   try {
     const db = await getDb();
-    const total = db.prepare('SELECT COUNT(*) as c FROM guests').get([]).c;
-    const accredited = db.prepare("SELECT COUNT(*) as c FROM guests WHERE accredited = 1").get([]).c;
+    const totalResult = db.exec('SELECT COUNT(*) as c FROM guests');
+    const total = totalResult[0]?.values?.[0]?.[0] || 0;
+
+    const accreditedResult = db.exec("SELECT COUNT(*) as c FROM guests WHERE accredited = 1");
+    const accredited = accreditedResult[0]?.values?.[0]?.[0] || 0;
+
     const pending = total - accredited;
     const percentage = total > 0 ? Math.round((accredited / total) * 100) : 0;
 
-    const surgeHours = db.prepare(`
+    const surgeResult = db.exec(`
       SELECT CAST(strftime('%H', accredited_at) AS INTEGER) as hour, COUNT(*) as count
       FROM guests WHERE accredited = 1 AND accredited_at IS NOT NULL
       GROUP BY hour ORDER BY count DESC, hour ASC
-    `).all([]);
+    `);
+    const surgeHours = rowsToObjects(surgeResult);
 
-    const allGuests = db.prepare(`SELECT * FROM guests ORDER BY created_at DESC`).all([]);
+    const allResult = db.exec('SELECT * FROM guests ORDER BY created_at DESC');
+    const allGuests = rowsToObjects(allResult);
 
     const eventName = process.env.EVENT_NAME || 'Workers Ball 2026';
     const eventDate = process.env.EVENT_DATE || '22nd Nov. 2026';

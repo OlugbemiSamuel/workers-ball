@@ -3,25 +3,29 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-const DB_PATH = path.join(__dirname, '../../database.sqlite');
+const DB_PATH = path.join(__dirname, '../database.sqlite');
 
 let db = null;
 let initializing = false;
 let initPromise = null;
 
-// Helper to normalize sql.js results (it sometimes returns arrays instead of single values)
-function normalizeGet(result) {
-  if (result === undefined || result === null) return undefined;
-  if (Array.isArray(result)) {
-    return result.length > 0 ? result[0] : undefined;
-  }
-  return result;
+// Escape single quotes for SQL
+function sqlEscape(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/'/g, "''");
 }
 
-function normalizeAll(result) {
-  if (!result) return [];
-  if (Array.isArray(result)) return result;
-  return [result];
+// Convert db.exec() result to array of objects
+function rowsToObjects(result) {
+  if (!result || result.length === 0) return [];
+  const { columns, values } = result[0];
+  return values.map((row) => {
+    const obj = {};
+    columns.forEach((col, i) => {
+      obj[col] = row[i];
+    });
+    return obj;
+  });
 }
 
 async function getDb() {
@@ -83,21 +87,6 @@ async function getDb() {
         return result;
       };
 
-      // Wrap prepare to normalize results
-      const originalPrepare = database.prepare.bind(database);
-      database.prepare = function (sql) {
-        const stmt = originalPrepare(sql);
-        const originalGet = stmt.get.bind(stmt);
-        const originalAll = stmt.all.bind(stmt);
-        stmt.get = function (...args) {
-          return normalizeGet(originalGet(...args));
-        };
-        stmt.all = function (...args) {
-          return normalizeAll(originalAll(...args));
-        };
-        return stmt;
-      };
-
       db = database;
       return database;
     } catch (err) {
@@ -109,4 +98,4 @@ async function getDb() {
   return await initPromise;
 }
 
-module.exports = { getDb, uuidv4 };
+module.exports = { getDb, uuidv4, sqlEscape, rowsToObjects };

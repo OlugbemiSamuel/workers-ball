@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getDb } = require('../db');
+const { getDb, sqlEscape, rowsToObjects } = require('../db');
 
 router.get('/search', async (req, res) => {
   try {
@@ -8,14 +8,14 @@ router.get('/search', async (req, res) => {
     const { name } = req.query;
     if (!name) return res.status(400).json({ error: 'name query parameter is required' });
 
-    const like = `%${name}%`;
-    const rows = db.prepare(
+    const like = `%${sqlEscape(name)}%`;
+    const result = db.exec(
       `SELECT id, full_name, email, phone, ticket_id, accredited, accredited_at, ticket_sent_count
        FROM guests
-       WHERE full_name LIKE ? OR email LIKE ? OR ticket_id LIKE ?
+       WHERE full_name LIKE '${like}' OR email LIKE '${like}' OR ticket_id LIKE '${like}'
        ORDER BY full_name ASC LIMIT 10`
-    ).all([like, like, like]);
-
+    );
+    const rows = rowsToObjects(result);
     res.json({ results: rows });
   } catch (err) {
     console.error('Search error:', err);
@@ -26,9 +26,10 @@ router.get('/search', async (req, res) => {
 router.get('/guest/:ticketId', async (req, res) => {
   try {
     const db = await getDb();
-    const row = db.prepare('SELECT * FROM guests WHERE ticket_id = ?').get([req.params.ticketId]);
-    if (!row) return res.status(404).json({ error: 'Guest not found' });
-    res.json({ guest: row });
+    const result = db.exec(`SELECT * FROM guests WHERE ticket_id = '${sqlEscape(req.params.ticketId)}'`);
+    const rows = rowsToObjects(result);
+    if (rows.length === 0) return res.status(404).json({ error: 'Guest not found' });
+    res.json({ guest: rows[0] });
   } catch (err) {
     console.error('Get guest by ticket error:', err);
     res.status(500).json({ error: 'Failed to get guest' });
@@ -38,9 +39,11 @@ router.get('/guest/:ticketId', async (req, res) => {
 router.post('/confirm/:ticketId', async (req, res) => {
   try {
     const db = await getDb();
-    const row = db.prepare('SELECT * FROM guests WHERE ticket_id = ?').get([req.params.ticketId]);
-    if (!row) return res.status(404).json({ error: 'Guest not found' });
+    const result = db.exec(`SELECT * FROM guests WHERE ticket_id = '${sqlEscape(req.params.ticketId)}'`);
+    const rows = rowsToObjects(result);
+    if (rows.length === 0) return res.status(404).json({ error: 'Guest not found' });
 
+    const row = rows[0];
     if (row.accredited === 1) {
       return res.status(409).json({
         error: 'Already accredited',
@@ -50,8 +53,9 @@ router.post('/confirm/:ticketId', async (req, res) => {
     }
 
     const now = new Date().toISOString();
-    db.run('UPDATE guests SET accredited = 1, accredited_at = ?, updated_at = ? WHERE ticket_id = ?', [now, now, req.params.ticketId]);
-    const updated = db.prepare('SELECT * FROM guests WHERE ticket_id = ?').get([req.params.ticketId]);
+    db.run(`UPDATE guests SET accredited = 1, accredited_at = '${now}', updated_at = '${now}' WHERE ticket_id = '${sqlEscape(req.params.ticketId)}'`);
+    const updatedResult = db.exec(`SELECT * FROM guests WHERE ticket_id = '${sqlEscape(req.params.ticketId)}'`);
+    const updated = rowsToObjects(updatedResult)[0];
     res.json({ message: 'Guest accredited successfully', guest: updated });
   } catch (err) {
     console.error('Confirm accreditation error:', err);
@@ -62,18 +66,23 @@ router.post('/confirm/:ticketId', async (req, res) => {
 router.get('/stats', async (req, res) => {
   try {
     const db = await getDb();
-    const total = db.prepare('SELECT COUNT(*) as c FROM guests').get([]).c;
-    const accredited = db.prepare("SELECT COUNT(*) as c FROM guests WHERE accredited = 1").get([]).c;
+    const totalResult = db.exec('SELECT COUNT(*) as c FROM guests');
+    const total = totalResult[0]?.values?.[0]?.[0] || 0;
+
+    const accreditedResult = db.exec("SELECT COUNT(*) as c FROM guests WHERE accredited = 1");
+    const accredited = accreditedResult[0]?.values?.[0]?.[0] || 0;
+
     const pending = total - accredited;
     const percentage = total > 0 ? Math.round((accredited / total) * 100) : 0;
 
-    const hourlyRows = db.prepare(`
+    const surgeResult = db.exec(`
       SELECT CAST(strftime('%H', accredited_at) AS INTEGER) as hour, COUNT(*) as count
       FROM guests WHERE accredited = 1 AND accredited_at IS NOT NULL
       GROUP BY hour ORDER BY count DESC
-    `).all([]);
+    `);
+    const surgeHours = rowsToObjects(surgeResult);
 
-    res.json({ total, accredited, pending, percentage, surgeHours: hourlyRows });
+    res.json({ total, accredited, pending, percentage, surgeHours });
   } catch (err) {
     console.error('Stats error:', err);
     res.status(500).json({ error: 'Failed to get stats' });

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const QRCode = require('qrcode');
 const nodemailer = require('nodemailer');
-const { getDb } = require('../db');
+const { getDb, sqlEscape, rowsToObjects } = require('../db');
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'server396.web-hosting.com',
@@ -17,10 +17,11 @@ const transporter = nodemailer.createTransport({
 router.get('/qr/:ticketId', async (req, res) => {
   try {
     const db = await getDb();
-    const row = db.prepare('SELECT qr_code_data FROM guests WHERE ticket_id = ?').get([req.params.ticketId]);
-    if (!row || !row.qr_code_data) return res.status(404).json({ error: 'QR data not found' });
+    const result = db.exec(`SELECT qr_code_data FROM guests WHERE ticket_id = '${sqlEscape(req.params.ticketId)}'`);
+    const rows = rowsToObjects(result);
+    if (rows.length === 0 || !rows[0].qr_code_data) return res.status(404).json({ error: 'QR data not found' });
 
-    const qrBuffer = await QRCode.toBuffer(row.qr_code_data, {
+    const qrBuffer = await QRCode.toBuffer(rows[0].qr_code_data, {
       type: 'buffer', width: 300, margin: 2,
       color: { dark: '#000000', light: '#FFFFFF' }
     });
@@ -37,8 +38,11 @@ router.get('/qr/:ticketId', async (req, res) => {
 router.post('/send/:ticketId', async (req, res) => {
   try {
     const db = await getDb();
-    const guest = db.prepare('SELECT * FROM guests WHERE ticket_id = ?').get([req.params.ticketId]);
-    if (!guest) return res.status(404).json({ error: 'Guest not found' });
+    const result = db.exec(`SELECT * FROM guests WHERE ticket_id = '${sqlEscape(req.params.ticketId)}'`);
+    const rows = rowsToObjects(result);
+    if (rows.length === 0) return res.status(404).json({ error: 'Guest not found' });
+
+    const guest = rows[0];
     if (!guest.email) return res.status(400).json({ error: 'Guest has no email address' });
 
     const qrDataUrl = await QRCode.toDataURL(guest.qr_code_data, {
@@ -56,8 +60,9 @@ router.post('/send/:ticketId', async (req, res) => {
     });
 
     const now = new Date().toISOString();
-    db.run('UPDATE guests SET ticket_sent_count = ticket_sent_count + 1, ticket_last_sent_at = ?, updated_at = ? WHERE ticket_id = ?', [now, now, req.params.ticketId]);
-    const updated = db.prepare('SELECT * FROM guests WHERE ticket_id = ?').get([req.params.ticketId]);
+    db.run(`UPDATE guests SET ticket_sent_count = ticket_sent_count + 1, ticket_last_sent_at = '${now}', updated_at = '${now}' WHERE ticket_id = '${sqlEscape(req.params.ticketId)}'`);
+    const updatedResult = db.exec(`SELECT * FROM guests WHERE ticket_id = '${sqlEscape(req.params.ticketId)}'`);
+    const updated = rowsToObjects(updatedResult)[0];
 
     res.json({
       message: 'Ticket email sent successfully',
