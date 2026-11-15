@@ -59,7 +59,10 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const db = await getDb();
-    const { full_name, email, phone } = req.body;
+    const { full_name, phone } = req.body;
+    const email = typeof req.body.email === 'string' && req.body.email.trim()
+      ? req.body.email.trim().toLowerCase()
+      : null;
     if (!full_name) return res.status(400).json({ error: 'full_name is required' });
 
     const now = new Date().toISOString();
@@ -68,7 +71,7 @@ router.post('/', async (req, res) => {
     const qr_code_data = generateQRPayload(ticket_id);
 
     if (email) {
-      const existing = db.exec(`SELECT id FROM guests WHERE email = '${sqlEscape(email)}' LIMIT 1`);
+      const existing = db.exec('SELECT id FROM guests WHERE lower(email) = ? LIMIT 1', [email]);
       if (existing.length > 0 && existing[0].values.length > 0) {
         return res.status(409).json({ error: 'A guest with this email already exists' });
       }
@@ -88,6 +91,9 @@ router.post('/', async (req, res) => {
     };
     res.status(201).json({ guest: newGuest });
   } catch (err) {
+    if (/UNIQUE constraint failed/i.test(err.message)) {
+      return res.status(409).json({ error: 'A guest with this email already exists' });
+    }
     console.error('Create guest error:', err);
     res.status(500).json({ error: 'Failed to create guest', details: err.message });
   }
@@ -111,7 +117,7 @@ router.patch('/:id', async (req, res) => {
 
     if (normalizedEmail) {
       const existing = db.exec(
-        'SELECT id FROM guests WHERE email = ? AND id != ? LIMIT 1',
+        'SELECT id FROM guests WHERE lower(email) = ? AND id != ? LIMIT 1',
         [normalizedEmail, req.params.id]
       );
       if (existing[0]?.values?.length) {

@@ -71,11 +71,17 @@ app.get('/api/health', (req, res) => {
 const publicPath = path.join(__dirname, 'public');
 if (fs.existsSync(publicPath)) {
   app.use(express.static(publicPath));
-  // SPA fallback — all non-API routes serve index.html
-  app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
-      res.sendFile(path.join(publicPath, 'index.html'));
+  // SPA fallback — all non-API routes serve index.html.
+  // Unknown API routes must answer immediately with JSON; never leave the
+  // request open (a hanging request stalls the admin UI instead of failing).
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+      return next();
     }
+    res.sendFile(path.join(publicPath, 'index.html'));
+  });
+  app.use((req, res) => {
+    res.status(404).json({ error: 'Not found', path: req.path });
   });
 } else {
   app.get('*', (req, res) => {

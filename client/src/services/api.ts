@@ -4,6 +4,7 @@ const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 export const api = axios.create({
   baseURL: API_BASE,
+  timeout: 20000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -248,29 +249,29 @@ export const importExportApi = {
 export const reportsApi = {
   accreditation: async () => {
     try {
+      return await api.get<ReportStats>("/reports/accreditation");
+    } catch (err) {
+      if (!axios.isAxiosError(err) || err.response?.status !== 404) throw err;
       const response = await api.get<TypeScriptReportStats>("/guests/stats/accreditation");
       return {
         ...response,
         data: {
           ...response.data,
-          recent: response.data.recent.map((record, index) => normalizeGuest({
+          recent: (response.data.recent ?? []).map((record, index) => normalizeGuest({
             ...record,
             id: record.ticket_number ?? index,
             ticket_number: record.ticket_number,
           })),
         } satisfies ReportStats,
       };
-    } catch (err) {
-      if (!axios.isAxiosError(err) || err.response?.status !== 404) throw err;
-      return api.get<ReportStats>("/reports/accreditation");
     }
   },
   pdf: async () => {
     try {
-      return await api.get<Blob>("/guests/stats/report/pdf", { responseType: "blob" });
+      return await api.get<Blob>("/reports/pdf", { responseType: "blob" });
     } catch (err) {
       if (!axios.isAxiosError(err) || err.response?.status !== 404) throw err;
-      return api.get<Blob>("/reports/pdf", { responseType: "blob" });
+      return api.get<Blob>("/guests/stats/report/pdf", { responseType: "blob" });
     }
   },
 };

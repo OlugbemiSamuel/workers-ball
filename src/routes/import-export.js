@@ -59,17 +59,40 @@ router.post('/import', upload.single('file'), async (req, res) => {
 
     data.forEach((row, index) => {
       try {
-        const full_name = row.full_name || row.name || row['Full Name'] || '';
-        const email = row.email || row.Email || row['Email Address'] || null;
+        const full_name = String(row.full_name || row.name || row['Full Name'] || '').trim();
+        const rawEmail = row.email || row.Email || row['Email Address'] || '';
+        const email = typeof rawEmail === 'string' && rawEmail.trim()
+          ? rawEmail.trim().toLowerCase()
+          : null;
         const phone = row.phone || row.Phone || row['Phone Number'] || null;
         if (!full_name) { skipped++; errors.push({ row: index + 2, reason: 'Missing full_name' }); return; }
+
+        if (email) {
+          const duplicate = rowsToObjects(db.exec(
+            'SELECT id FROM guests WHERE lower(email) = ? LIMIT 1',
+            [email]
+          ));
+          if (duplicate.length > 0) {
+            skipped++;
+            errors.push({ row: index + 2, reason: `Duplicate email already registered: ${email}` });
+            return;
+          }
+        }
 
         const id = uuidv4();
         const ticket_id = generateTicketId();
         const qr_code_data = generateQRPayload(ticket_id);
         insertStmt.run([id, full_name, email, phone, ticket_id, qr_code_data, now, now]);
         imported++;
-      } catch (err) { skipped++; errors.push({ row: index + 2, reason: err.message }); }
+      } catch (err) {
+        skipped++;
+        errors.push({
+          row: index + 2,
+          reason: /UNIQUE constraint failed/i.test(err.message || '')
+            ? `Duplicate email already registered: ${email || 'unknown'}`
+            : err.message
+        });
+      }
     });
 
     res.json({ imported, skipped, total: data.length, errors: errors.slice(0, 10) });
@@ -103,7 +126,7 @@ router.get('/export', async (req, res) => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Guests');
 
-    const fileName = `workers-ball-guests-${new Date().toISOString().split('T')[0]}.${format}`;
+    const fileName = `sixth-season-guests-${new Date().toISOString().split('T')[0]}.${format}`;
     const filePath = path.join(uploadDir, fileName);
 
     if (format === 'csv') XLSX.writeFile(workbook, filePath, { bookType: 'csv', type: 'file' });

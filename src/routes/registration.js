@@ -102,6 +102,11 @@ router.post('/', async (req, res) => {
       email_sent: true
     });
   } catch (error) {
+    if (/UNIQUE constraint failed/i.test(error.message || '')) {
+      return res.status(409).json({
+        error: 'This email is already registered. Please use another email or contact the event team.'
+      });
+    }
     console.error('Public registration failed:', error);
     return res.status(500).json({ error: 'Registration could not be completed. Please try again.' });
   }

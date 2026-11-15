@@ -56,7 +56,7 @@ export default function ImportExportPage({ admin, onLogout }: ImportExportPagePr
       const url = URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.download = `workers-ball-guests-${new Date().toISOString().slice(0, 10)}.${format}`;
+      link.download = `sixth-season-guests-${new Date().toISOString().slice(0, 10)}.${format}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -79,16 +79,25 @@ export default function ImportExportPage({ admin, onLogout }: ImportExportPagePr
         <div className="grid gap-6 lg:grid-cols-2">
           <section className="rounded-xl border border-white/10 bg-[#1a1a1a] p-5 sm:p-6">
             <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold">
-              <Upload className="h-5 w-5 text-[#ffffff]" /> Import guests
+              <Upload className="h-5 w-5 text-[#F17A1E]" /> Import guests
             </h2>
             <p className="mb-5 text-sm text-gray-400">CSV and Excel (.xlsx) files are supported. Include columns for full name and, optionally, email and phone.</p>
 
-            <input ref={fileInput} type="file" accept=".csv,.xlsx" onChange={(event) => void handleFileChange(event)} className="sr-only" aria-label="Choose guest import file" />
-            <button type="button" onClick={() => fileInput.current?.click()} disabled={importing} className="flex min-h-36 w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-[#0f0f0f] px-4 py-6 text-center transition hover:border-white/70 disabled:opacity-60">
-              {importing ? <Loader2 className="h-8 w-8 animate-spin text-[#ffffff]" /> : <FileSpreadsheet className="h-8 w-8 text-gray-400" />}
-              <span className="text-sm font-medium text-gray-200">{importing ? "Importing guests..." : "Choose a CSV or Excel file"}</span>
-              <span className="text-xs text-gray-500">Maximum upload size depends on your server configuration</span>
-            </button>
+            <label
+              className={`relative flex min-h-36 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-[#0f0f0f] px-4 py-6 text-center transition hover:border-[#F17A1E] ${importing ? "pointer-events-none opacity-60" : ""}`}
+            >
+              <input
+                ref={fileInput}
+                type="file"
+                accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                onChange={(event) => void handleFileChange(event)}
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                aria-label="Choose guest import file"
+              />
+              {importing ? <Loader2 className="h-8 w-8 animate-spin text-[#F17A1E]" /> : <FileSpreadsheet className="h-8 w-8 text-[#F17A1E]" />}
+              <span className="text-sm font-medium text-gray-200">{importing ? "Importing guests..." : "Tap to choose a CSV or Excel file"}</span>
+              <span className="text-xs text-gray-500">Works on phone and desktop · .csv or .xlsx</span>
+            </label>
 
             {importError && <p role="alert" className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{importError}</p>}
             {importResult && (
@@ -110,12 +119,12 @@ export default function ImportExportPage({ admin, onLogout }: ImportExportPagePr
 
           <section className="rounded-xl border border-white/10 bg-[#1a1a1a] p-5 sm:p-6">
             <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold">
-              <Download className="h-5 w-5 text-[#ffffff]" /> Export guests
+              <Download className="h-5 w-5 text-[#F17A1E]" /> Export guests
             </h2>
             <p className="mb-5 text-sm text-gray-400">Choose a format and download all guests or filter by accreditation status.</p>
             {exportError && <p role="alert" className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{exportError}</p>}
             <div className="space-y-3">
-              <button type="button" onClick={() => void handleExport("xlsx")} disabled={Boolean(exporting)} className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm font-medium hover:bg-[#252525] disabled:opacity-60">
+              <button type="button" onClick={() => void handleExport("xlsx")} disabled={Boolean(exporting)} className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#F17A1E] bg-[#F17A1E] px-4 py-3 text-sm font-semibold text-black hover:brightness-110 disabled:opacity-60">
                 {exporting === "xlsx-all" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4" />} Export to Excel
               </button>
               <button type="button" onClick={() => void handleExport("csv")} disabled={Boolean(exporting)} className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm font-medium hover:bg-[#252525] disabled:opacity-60">

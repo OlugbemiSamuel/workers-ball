@@ -39,7 +39,7 @@ export default function ReportsPage({ admin, onLogout }: ReportsPageProps): JSX.
       const url = URL.createObjectURL(data);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${(stats?.event || "workers-ball").replace(/[^a-z0-9-]+/gi, "-")}-Accreditation-Report.pdf`;
+      link.download = `${(stats?.event || "sixth-season").replace(/[^a-z0-9-]+/gi, "-")}-Accreditation-Report.pdf`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -55,7 +55,7 @@ export default function ReportsPage({ admin, onLogout }: ReportsPageProps): JSX.
     <AdminPageLayout admin={admin} onLogout={onLogout} activePage="reports">
       {loading ? (
         <div className="flex min-h-64 items-center justify-center gap-3 text-gray-400">
-          <Loader2 className="h-5 w-5 animate-spin text-[#ffffff]" /> Loading report...
+          <Loader2 className="h-5 w-5 animate-spin text-[#F17A1E]" /> Loading report...
         </div>
       ) : error && !stats ? (
         <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-5 text-sm text-red-300" role="alert">{error}</div>
@@ -63,10 +63,10 @@ export default function ReportsPage({ admin, onLogout }: ReportsPageProps): JSX.
         <div className="space-y-6">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="font-serif text-2xl font-bold text-[#ffffff]">Accreditation Report</h1>
+              <h1 className="font-serif text-2xl font-bold text-white">Accreditation Report</h1>
               <p className="mt-1 text-sm text-gray-400">{stats.event} · {stats.eventDate}</p>
             </div>
-            <button type="button" onClick={() => void downloadPDF()} disabled={pdfLoading} className="flex items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-[#0a0a0a] hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="button" onClick={() => void downloadPDF()} disabled={pdfLoading} className="flex items-center justify-center gap-2 rounded-lg bg-[#F17A1E] px-5 py-3 text-sm font-semibold text-black hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60">
               {pdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
               {pdfLoading ? "Generating PDF..." : "Download PDF report"}
             </button>
@@ -89,7 +89,7 @@ export default function ReportsPage({ admin, onLogout }: ReportsPageProps): JSX.
           </div>
 
           <section className="rounded-xl border border-white/10 bg-[#1a1a1a] p-5 sm:p-6">
-            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Activity className="h-5 w-5 text-[#ffffff]" /> Surge hours</h2>
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Activity className="h-5 w-5 text-[#F17A1E]" /> Surge hours</h2>
             {stats.surgeHours.length ? (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[400px] text-left">

@@ -87,6 +87,23 @@ async function getDb() {
         return result;
       };
 
+      // Keep one guest per email address. Duplicates (for example from older
+      // Excel imports) are removed before the unique index is enforced.
+      try {
+        database.run("UPDATE guests SET email = lower(trim(email)) WHERE email IS NOT NULL AND trim(email) <> ''");
+        database.run(`DELETE FROM guests
+          WHERE email IS NOT NULL AND trim(email) <> ''
+            AND rowid NOT IN (
+              SELECT MIN(rowid) FROM guests
+              WHERE email IS NOT NULL AND trim(email) <> ''
+              GROUP BY lower(trim(email))
+            )`);
+        database.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_guests_email_unique
+          ON guests(lower(email)) WHERE email IS NOT NULL AND email <> ''`);
+      } catch (migrationErr) {
+        console.error('Email uniqueness migration failed:', migrationErr.message);
+      }
+
       db = database;
       return database;
     } catch (err) {

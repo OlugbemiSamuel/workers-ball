@@ -78,8 +78,8 @@ function generateTicketEmail(guest, event) {
       <img src="cid:sixth-season-flyer" alt="Sixth Season Pop-Up Experience flyer" width="600" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
     </td></tr>
     <tr><td align="center" style="padding:24px 20px 10px;background:#000000;">
-      <h1 style="margin:0;font-size:24px;color:#ffffff;letter-spacing:4px;">SIXTH SEASON</h1>
-      <p style="margin:8px 0 0;font-size:12px;color:#a1a1aa;letter-spacing:2px;text-transform:uppercase;">Beyond Limits. Beyond Seasons.</p>
+      <h1 style="margin:0;font-size:24px;color:#F17A1E;letter-spacing:4px;">SIXTH SEASON</h1>
+      <p style="margin:8px 0 0;font-size:12px;color:#F17A1E;letter-spacing:2px;text-transform:uppercase;">Beyond Limits. Beyond Seasons.</p>
     </td></tr>
     <tr><td style="padding:24px 20px;text-align:center;background:#ffffff;color:#000000;">
       <p style="margin:6px 0;font-size:17px;"><strong>Guest:</strong> ${guest.full_name}</p>
@@ -88,7 +88,7 @@ function generateTicketEmail(guest, event) {
       <p style="margin:8px 0;color:#3f3f46;font-size:15px;"><strong>Time:</strong> ${event.eventTime}</p>
       <p style="margin:8px 0;color:#3f3f46;font-size:15px;"><strong>Venue:</strong> ${event.venue}</p>
     </td></tr>
-    <tr><td align="center" style="padding:24px 20px;background:#000000;border-top:1px solid #2a2a2a;">
+    <tr><td align="center" style="padding:24px 20px;background:#000000;border-top:2px solid #F17A1E;">
       <img src="cid:sixth-season-qr" alt="Accreditation QR code for ${guest.ticket_id}" width="220" height="220" style="display:block;width:220px;height:220px;max-width:100%;border:1px solid #ffffff;background:#ffffff;" />
       <p style="margin:16px 0 0;font-size:14px;color:#d4d4d8;">Present this QR code at the entrance for accreditation.</p>
     </td></tr>

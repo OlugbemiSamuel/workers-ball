@@ -222,7 +222,7 @@ export default function AccreditPage({ onAuthExpired }: AccreditPageProps = {}):
       <header className="border-b border-white/10 bg-black px-4 py-4 sm:px-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 text-white">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#F17A1E] text-[#F17A1E]">
               <ScanLine className="h-5 w-5" />
             </div>
             <div>

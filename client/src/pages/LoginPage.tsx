@@ -34,7 +34,7 @@ export default function LoginPage({
       <div className="w-full max-w-md px-6">
         <div className="bg-zinc-950 border border-white/15 rounded-none p-8 shadow-2xl">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full border border-white/40 flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-10 h-10 rounded-2xl border-2 border-[#F17A1E] flex items-center justify-center text-[#F17A1E] font-black text-sm">
               S6
             </div>
             <span className="font-serif font-bold text-xl text-white tracking-wide">
@@ -85,7 +85,7 @@ export default function LoginPage({
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-white text-black py-3 rounded-none font-semibold text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-zinc-200 transition-all disabled:opacity-50"
+              className="w-full bg-[#F17A1E] text-black py-3 rounded-none font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#ff8b33] transition-all disabled:opacity-50"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>

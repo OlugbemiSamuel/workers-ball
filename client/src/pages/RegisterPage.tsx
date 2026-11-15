@@ -30,33 +30,21 @@ export default function RegistrationPage(): JSX.Element {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Sixth Season flyer background */}
-      <div className="relative flex-1 overflow-hidden">
-        <div className="absolute inset-0 w-full h-full">
+    <div className="min-h-screen bg-black px-6 py-10">
+      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-md flex-col justify-center">
+        {/* Official Sixth Season artwork */}
+        <div className="overflow-hidden border border-white/10 bg-black">
           <img
-            src="/images/sixth-season-flyer.jpeg"
-            alt="Sixth Season Pop-Up Experience"
-            className="w-full h-full object-cover object-center"
+            src="/images/sixth-season-hero.jpeg"
+            alt="Sixth Season — Beyond Limits. Beyond Seasons."
+            className="h-auto w-full"
           />
         </div>
-        <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-black/95 via-black/70 to-black/40" />
-      </div>
 
-      {/* Overlay content */}
-      <div className="relative z-10 flex-1 flex items-center justify-center px-6 py-12">
-        <div className="max-w-md w-full">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border border-white/40 mb-4">
-              <span className="font-bold text-lg tracking-tight text-white">S6</span>
-            </div>
-            <h1 className="text-4xl font-serif font-bold text-white mb-2 leading-tight tracking-wide">
-              SIXTH SEASON
-            </h1>
-            <p className="text-zinc-400 font-semibold tracking-[0.25em] uppercase text-xs">
-              Beyond Limits. Beyond Seasons.
-            </p>
-          </div>
+        <div className="mb-6 mt-5 flex flex-col items-center gap-1 text-center text-sm text-zinc-300">
+          <span><span className="text-[#F17A1E]">●</span> Sunday, 22nd November 2026 • 6:00 PM</span>
+          <span><span className="text-[#F17A1E]">●</span> BYD, Victoria Island, Lagos</span>
+        </div>
 
           {/* Registration card */}
           <div className="bg-white border border-white/20 rounded-none p-8 shadow-2xl">
@@ -69,7 +57,7 @@ export default function RegistrationPage(): JSX.Element {
                 <label className="block text-sm font-medium text-black mb-1.5">First name *</label>
                 <input
                   type="text"
-                  className="w-full px-4 py-3 rounded-none bg-white border border-black/20 focus:border-black focus:outline-none text-black"
+                  className="w-full px-4 py-3 rounded-none bg-white border border-black/20 focus:border-[#F17A1E] focus:outline-none text-black"
                   placeholder="John"
                   value={form.full_name.split(' ')[0] || ''}
                   onChange={(e) => {
@@ -85,7 +73,7 @@ export default function RegistrationPage(): JSX.Element {
                 <label className="block text-sm font-medium text-black mb-1.5">Last name *</label>
                 <input
                   type="text"
-                  className="w-full px-4 py-3 rounded-none bg-white border border-black/20 focus:border-black focus:outline-none text-black"
+                  className="w-full px-4 py-3 rounded-none bg-white border border-black/20 focus:border-[#F17A1E] focus:outline-none text-black"
                   placeholder="Doe"
                   value={form.full_name.split(' ').slice(1).join(' ') || ''}
                   onChange={(e) => {
@@ -101,7 +89,7 @@ export default function RegistrationPage(): JSX.Element {
                 <label className="block text-sm font-medium text-black mb-1.5">Email *</label>
                 <input
                   type="email"
-                  className="w-full px-4 py-3 rounded-none bg-white border border-black/20 focus:border-black focus:outline-none text-black"
+                  className="w-full px-4 py-3 rounded-none bg-white border border-black/20 focus:border-[#F17A1E] focus:outline-none text-black"
                   placeholder="john@example.com"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -113,7 +101,7 @@ export default function RegistrationPage(): JSX.Element {
                 <label className="block text-sm font-medium text-black mb-1.5">Phone number (optional)</label>
                 <input
                   type="tel"
-                  className="w-full px-4 py-3 rounded-none bg-white border border-black/20 focus:border-black focus:outline-none text-black"
+                  className="w-full px-4 py-3 rounded-none bg-white border border-black/20 focus:border-[#F17A1E] focus:outline-none text-black"
                   placeholder="+234 800 000 0000"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -123,7 +111,7 @@ export default function RegistrationPage(): JSX.Element {
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="w-full bg-black hover:bg-zinc-800 text-white py-4 rounded-none font-semibold text-sm uppercase tracking-widest transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full bg-[#F17A1E] hover:bg-[#ff8b33] text-black py-4 rounded-none font-bold text-sm uppercase tracking-widest transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {status === 'loading' ? 'Processing...' : 'Complete Registration'}
               </button>
@@ -142,12 +130,6 @@ export default function RegistrationPage(): JSX.Element {
               </div>
             )}
           </div>
-
-          <div className="mt-8 text-center">
-            <p className="text-sm text-zinc-400">Sunday, 22nd November 2026 • 6:00 PM</p>
-            <p className="text-sm text-zinc-400">BYD, Victoria Island, Lagos</p>
-          </div>
-        </div>
       </div>
     </div>
   );
