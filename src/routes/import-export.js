@@ -18,8 +18,9 @@ function requireAuth(req, res, next) {
   const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
   const [username, password] = credentials.split(':');
   const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
   const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+  if ((username === ADMIN_USERNAME || (ADMIN_EMAIL && username === ADMIN_EMAIL)) && password === ADMIN_PASSWORD) {
     return next();
   }
   return res.status(401).json({ error: 'Invalid credentials' });

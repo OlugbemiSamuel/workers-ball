@@ -10,7 +10,6 @@ import {
   Mail,
   Menu,
   Plus,
-  ScanLine,
   Search,
   Upload,
   Users,
@@ -215,13 +214,12 @@ export default function DashboardPage({
   const navigation = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/admin/guests", label: "Guests", icon: Users },
-    { to: "/accredit", label: "Accredit", icon: ScanLine },
     { to: "/admin/reports", label: "Reports", icon: Activity },
     { to: "/admin/import-export", label: "Import / Export", icon: Upload },
   ];
 
   const isActive = (to: string): boolean => {
-    if (to === "/dashboard") return location.pathname === "/dashboard" || (!["/admin/guests", "/admin/reports", "/admin/import-export", "/accredit"].includes(location.pathname) && section === "overview");
+    if (to === "/dashboard") return location.pathname === "/dashboard" || (!["/admin/guests", "/admin/reports", "/admin/import-export"].includes(location.pathname) && section === "overview");
     if (to === "/admin/guests") return location.pathname === "/admin/guests";
     return location.pathname === to;
   };

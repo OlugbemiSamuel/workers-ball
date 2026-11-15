@@ -105,7 +105,7 @@ Follows the exact same layered pattern as the texcellence conference project:
 
 ## Features Implemented & Tested
 ✅ **Registration Page** — Event background image, modern stacked form (First name, Last name, Email, Phone), public access
-✅ **Admin Login** — JWT authentication with admin@harvesters.org / Admin123!
+✅ **Admin Login** — JWT authentication with SixthAdmin / adminpassword!
 ✅ **Admin Dashboard** — Sidebar layout, stats cards, guest management
 ✅ **Guest Management** — View, edit (no delete), search, filter, pagination, add guest, send ticket email, accredit guest
 ✅ **Accreditation Page** — Green theme "Accredit Interactive", camera scanner (start/stop), manual search with debounce (3 keystrokes), verify button, already-accredited guard, recent activity
@@ -122,8 +122,8 @@ EVENT_DATE=Sunday, 22nd November 2026
 EVENT_TIME=6:00 PM
 VENUE=BYD, Victoria Island, Lagos
 REGISTRATION_URL=http://localhost:5173/register
-ADMIN_EMAIL=admin@harvesters.org
-ADMIN_PASSWORD=Admin123!
+ADMIN_EMAIL=SixthAdmin
+ADMIN_PASSWORD=adminpassword!
 JWT_SECRET=workers-ball-2026-super-secret-key-change-in-production
 EMAIL_HOST=server396.web-hosting.com
 EMAIL_PORT=465
@@ -143,5 +143,5 @@ DEFAULT_FROM_EMAIL=noreply@accredit.vip
 7. Start the app
 
 ## Test Credentials
-- Admin login: admin@harvesters.org / Admin123!
+- Admin login: SixthAdmin / adminpassword!
 - Test guest: john@test.com (already in database from testing)

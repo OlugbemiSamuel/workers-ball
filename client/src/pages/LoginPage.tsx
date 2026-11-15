@@ -53,13 +53,16 @@ export default function LoginPage({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Username</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                 <input
                   name="email"
-                  type="email"
-                  className="w-full pl-10 pr-4 py-3 rounded-none bg-black border border-white/20 focus:border-white focus:outline-none text-white placeholder-zinc-600"
+                  type="text"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  placeholder="SixthAdmin"
+                  className="w-full pl-10 pr-4 py-3 rounded-none bg-black border border-white/20 focus:border-[#F17A1E] focus:outline-none text-white placeholder-zinc-600"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   required
@@ -74,7 +77,7 @@ export default function LoginPage({
                 <input
                   name="password"
                   type="password"
-                  className="w-full pl-10 pr-4 py-3 rounded-none bg-black border border-white/20 focus:border-white focus:outline-none text-white placeholder-zinc-600"
+                  className="w-full pl-10 pr-4 py-3 rounded-none bg-black border border-white/20 focus:border-[#F17A1E] focus:outline-none text-white placeholder-zinc-600"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   required
