@@ -13,7 +13,7 @@
 
 @layer components {
   .gold-gradient {
-    background: linear-gradient(135deg, #d97706 0%, #b45309 50%, #78350f 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #d4d4d8 50%, #71717a 100%);
   }
   .btn-primary {
     @apply bg-[#0a0a0a] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#1a1a1a] transition-colors;

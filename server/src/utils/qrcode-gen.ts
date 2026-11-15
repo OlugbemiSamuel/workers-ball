@@ -1,11 +1,11 @@
-// QR code payload and ticket ID generation utilities.
+﻿// QR code payload and ticket ID generation utilities.
 
 let ticketCounter = 0;
 
 export function generateTicketId(): string {
   ticketCounter++;
   const padded = String(ticketCounter).padStart(4, "0");
-  return `WB26-${padded}`;
+  return `SS26-${padded}`;
 }
 
 export function generateQRPayload(ticketId: string): string {

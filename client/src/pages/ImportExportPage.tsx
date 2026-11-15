@@ -72,20 +72,20 @@ export default function ImportExportPage({ admin, onLogout }: ImportExportPagePr
     <AdminPageLayout admin={admin} onLogout={onLogout} activePage="import-export">
       <div className="space-y-6">
         <header>
-          <h1 className="font-serif text-2xl font-bold text-[#d97706]">Import / Export Guests</h1>
+          <h1 className="font-serif text-2xl font-bold text-[#ffffff]">Import / Export Guests</h1>
           <p className="mt-1 text-sm text-gray-400">Upload guest details or download the guest list.</p>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <section className="rounded-xl border border-white/10 bg-[#1a1a1a] p-5 sm:p-6">
             <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold">
-              <Upload className="h-5 w-5 text-[#d97706]" /> Import guests
+              <Upload className="h-5 w-5 text-[#ffffff]" /> Import guests
             </h2>
             <p className="mb-5 text-sm text-gray-400">CSV and Excel (.xlsx) files are supported. Include columns for full name and, optionally, email and phone.</p>
 
             <input ref={fileInput} type="file" accept=".csv,.xlsx" onChange={(event) => void handleFileChange(event)} className="sr-only" aria-label="Choose guest import file" />
-            <button type="button" onClick={() => fileInput.current?.click()} disabled={importing} className="flex min-h-36 w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-[#0f0f0f] px-4 py-6 text-center transition hover:border-[#d97706]/70 disabled:opacity-60">
-              {importing ? <Loader2 className="h-8 w-8 animate-spin text-[#d97706]" /> : <FileSpreadsheet className="h-8 w-8 text-gray-400" />}
+            <button type="button" onClick={() => fileInput.current?.click()} disabled={importing} className="flex min-h-36 w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-[#0f0f0f] px-4 py-6 text-center transition hover:border-white/70 disabled:opacity-60">
+              {importing ? <Loader2 className="h-8 w-8 animate-spin text-[#ffffff]" /> : <FileSpreadsheet className="h-8 w-8 text-gray-400" />}
               <span className="text-sm font-medium text-gray-200">{importing ? "Importing guests..." : "Choose a CSV or Excel file"}</span>
               <span className="text-xs text-gray-500">Maximum upload size depends on your server configuration</span>
             </button>
@@ -110,7 +110,7 @@ export default function ImportExportPage({ admin, onLogout }: ImportExportPagePr
 
           <section className="rounded-xl border border-white/10 bg-[#1a1a1a] p-5 sm:p-6">
             <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold">
-              <Download className="h-5 w-5 text-[#d97706]" /> Export guests
+              <Download className="h-5 w-5 text-[#ffffff]" /> Export guests
             </h2>
             <p className="mb-5 text-sm text-gray-400">Choose a format and download all guests or filter by accreditation status.</p>
             {exportError && <p role="alert" className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{exportError}</p>}

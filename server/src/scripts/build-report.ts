@@ -1,4 +1,4 @@
-import PDFKit from "pdfkit";
+﻿import PDFKit from "pdfkit";
 import fs from "node:fs";
 import path from "node:path";
 import { getDb } from "../db/connection.js";
@@ -14,12 +14,12 @@ doc.pipe(stream);
 
 // Header band
 doc.rect(0, 0, doc.page.width, 60).fill("#000000");
-doc.fillColor("#ffd700").fontSize(24).text(process.env.EVENT_NAME || "Workers Ball 2026", {
+doc.fillColor("#d4d4d8").fontSize(24).text(process.env.EVENT_NAME || "Sixth Season", {
   align: "center",
   y: 25,
 });
 doc.fillColor("#ffffff").fontSize(12).text(
-  `${process.env.EVENT_DATE || "22nd Nov. 2026"} • ${process.env.VENUE || "Harvesters Globe Ologolo"}`,
+  `${process.env.EVENT_DATE || "Sunday, 22nd November 2026"} â€¢ ${process.env.VENUE || "BYD, Victoria Island, Lagos"}`,
   { align: "center", y: 40 }
 );
 doc.fillColor("#ffffff").fontSize(12).text("Accreditation Report", { align: "center", y: 52 });

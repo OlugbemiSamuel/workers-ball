@@ -21,11 +21,11 @@ export function Navbar({ onLogout }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gold-600 flex items-center justify-center text-dark-900 font-bold text-sm">
-              WB
+            <div className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center text-white font-bold text-sm">
+              S6
             </div>
             <span className="font-serif font-bold text-xl text-white tracking-tight">
-              Workers Ball 2026
+              SIXTH SEASON
             </span>
           </div>
 

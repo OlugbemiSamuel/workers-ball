@@ -13,14 +13,14 @@ function generateAccreditationPDF({ eventName, eventDate, venue, total, accredit
   doc.setFillColor(0, 0, 0);
   doc.rect(0, 0, pageWidth, 60, 'F');
 
-  doc.setTextColor(255, 215, 0); // Gold
+  doc.setTextColor(212, 212, 216); // Silver
   doc.setFontSize(24);
   doc.text(eventName, pageWidth / 2, 25, { align: 'center' });
 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(12);
   doc.text(`${eventDate} • ${venue}`, pageWidth / 2, 40, { align: 'center' });
-  doc.text('Accreditation Report — Leadway Lifestyle Style', pageWidth / 2, 52, { align: 'center' });
+  doc.text('Accreditation Report — Sixth Season', pageWidth / 2, 52, { align: 'center' });
 
   // Summary stats
   let y = 75;
@@ -40,7 +40,7 @@ function generateAccreditationPDF({ eventName, eventDate, venue, total, accredit
     doc.setFontSize(12);
     doc.setTextColor(50, 50, 50);
     doc.text(label, 20, y);
-    doc.setTextColor(0, 100, 0);
+    doc.setTextColor(0, 0, 0);
     doc.text(String(value), 140, y);
     y += 8;
   });
@@ -59,7 +59,7 @@ function generateAccreditationPDF({ eventName, eventDate, venue, total, accredit
       head: [['Rank', 'Hour', 'Accreditations']],
       body: surgeData,
       theme: 'grid',
-      headStyles: { fillColor: [0, 0, 0], textColor: [255, 215, 0] },
+      headStyles: { fillColor: [0, 0, 0], textColor: [212, 212, 216] },
       styles: { fontSize: 10, textColor: [0, 0, 0] }
     });
     y = doc.lastAutoTable.finalY + 15;
@@ -90,7 +90,7 @@ function generateAccreditationPDF({ eventName, eventDate, venue, total, accredit
     head: [['#', 'Full Name', 'Email', 'Ticket ID', 'Status', 'Accredited At']],
     body: guestData,
     theme: 'striped',
-    headStyles: { fillColor: [0, 0, 0], textColor: [255, 215, 0] },
+    headStyles: { fillColor: [0, 0, 0], textColor: [212, 212, 216] },
     styles: { fontSize: 8, cellPadding: 3, textColor: [0, 0, 0] },
     columnStyles: {
       0: { cellWidth: 10 },

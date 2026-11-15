@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+﻿import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import nodemailer from "nodemailer";
@@ -21,7 +21,7 @@ const transporter = nodemailer.createTransport({
 
 const flyerPath = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  "../../../client/src/images/eventFlyer.jpeg",
+  "../../../client/public/images/sixth-season-flyer.jpeg",
 );
 
 const createInlineImages = async (qrPayload: string) => {
@@ -36,7 +36,7 @@ const createInlineImages = async (qrPayload: string) => {
   ]);
   return [
     { filename: "workers-ball-ticket-qr.png", content: qr, contentType: "image/png", cid: "workers-ball-qr", contentDisposition: "inline" as const },
-    { filename: "workers-ball-flyer.jpeg", content: flyer, contentType: "image/jpeg", cid: "workers-ball-flyer", contentDisposition: "inline" as const },
+    { filename: "sixth-season-flyer.jpeg", content: flyer, contentType: "image/jpeg", cid: "sixth-season-flyer", contentDisposition: "inline" as const },
   ];
 };
 
@@ -49,9 +49,9 @@ export const sendTicketEmail = async (guest: Guest): Promise<void> => {
   const html = generateEmailHtml(guest, "Ticket");
 
   await transporter.sendMail({
-    from: `"${process.env.EVENT_NAME || "Workers Ball 2026"}" <${process.env.DEFAULT_FROM_EMAIL || "noreply@accredit.vip"}>`,
+    from: `"${process.env.EVENT_NAME || "Sixth Season"}" <${process.env.DEFAULT_FROM_EMAIL || "noreply@accredit.vip"}>`,
     to: guest.email,
-    subject: `Your Ticket for ${process.env.EVENT_NAME || "Workers Ball 2026"} — ${guest.ticket_number}`,
+    subject: `Your Ticket for ${process.env.EVENT_NAME || "Sixth Season"} â€” ${guest.ticket_number}`,
     html,
     attachments,
   });
@@ -66,34 +66,34 @@ export const sendRsvpEmail = async (guest: Guest): Promise<void> => {
   const html = generateEmailHtml(guest, "RSVP Confirmation");
 
   await transporter.sendMail({
-    from: `"${process.env.EVENT_NAME || "Workers Ball 2026"}" <${process.env.DEFAULT_FROM_EMAIL || "noreply@accredit.vip"}>`,
+    from: `"${process.env.EVENT_NAME || "Sixth Season"}" <${process.env.DEFAULT_FROM_EMAIL || "noreply@accredit.vip"}>`,
     to: guest.email,
-    subject: `RSVP Confirmation — ${process.env.EVENT_NAME || "Workers Ball 2026"}`,
+    subject: `RSVP Confirmation â€” ${process.env.EVENT_NAME || "Sixth Season"}`,
     html,
     attachments,
   });
 };
 
 function generateEmailHtml(guest: Guest, heading: "Ticket" | "RSVP Confirmation"): string {
-  const eventName = process.env.EVENT_NAME || "Workers Ball 2026";
-  const eventDate = process.env.EVENT_DATE || "22nd Nov. 2026";
+  const eventName = process.env.EVENT_NAME || "Sixth Season";
+  const eventDate = process.env.EVENT_DATE || "Sunday, 22nd November 2026";
   const eventTime = process.env.EVENT_TIME || "4PM";
-  const venue = process.env.VENUE || "Harvesters Globe Ologolo";
+  const venue = process.env.VENUE || "BYD, Victoria Island, Lagos";
   const statusLine = heading === "Ticket"
     ? `<p style="margin:8px 0;color:#6b4c23;font-size:15px;"><strong>Ticket ID:</strong> ${guest.ticket_number}</p>`
     : `<p style="margin:8px 0;color:#6b4c23;font-size:15px;"><strong>RSVP Status:</strong> Confirmed</p>`;
 
   return `
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${heading} — ${eventName}</title></head>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${heading} â€” ${eventName}</title></head>
 <body style="margin:0;padding:24px 12px;font-family:'Segoe UI',Arial,sans-serif;background:#21170d;color:#fff8e9;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#fff8e9;border:1px solid #d89a27;">
     <tr><td style="padding:0;background:#21170d;">
-      <img src="cid:workers-ball-flyer" alt="Workers Ball 2026 event flyer" width="600" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
+      <img src="cid:sixth-season-flyer" alt="Sixth Season event flyer" width="600" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
     </td></tr>
     <tr><td align="center" style="padding:24px 20px 10px;background:#3a2612;">
       <h1 style="margin:0;font-size:24px;color:#f4bd4f;letter-spacing:1px;">${eventName}</h1>
-      <p style="margin:8px 0 0;font-size:14px;color:#fff1ce;letter-spacing:1px;">${heading} · Light of the Globe</p>
+      <p style="margin:8px 0 0;font-size:14px;color:#fff1ce;letter-spacing:1px;">${heading} Â· Beyond Limits. Beyond Seasons.</p>
     </td></tr>
     <tr><td style="padding:24px 20px;text-align:center;background:#fff8e9;color:#3a2612;">
       <p style="margin:6px 0;font-size:17px;"><strong>Guest:</strong> ${guest.first_name} ${guest.last_name}</p>
@@ -108,7 +108,7 @@ function generateEmailHtml(guest: Guest, heading: "Ticket" | "RSVP Confirmation"
     </td></tr>
     <tr><td style="padding:18px;text-align:center;font-size:12px;color:#fff1ce;background:#3a2612;">
       <p style="margin:0;">Please present this ticket on your phone or as a printout.</p>
-      <p style="margin:8px 0 0;">${venue} · ${eventDate} · ${eventTime}</p>
+      <p style="margin:8px 0 0;">${venue} Â· ${eventDate} Â· ${eventTime}</p>
     </td></tr>
   </table>
 </body></html>`;

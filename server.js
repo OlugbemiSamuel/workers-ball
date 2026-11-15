@@ -79,7 +79,7 @@ if (fs.existsSync(publicPath)) {
   });
 } else {
   app.get('*', (req, res) => {
-    res.json({ message: 'Workers Ball API running. Frontend build not found. Build client and copy to /public.' });
+    res.json({ message: 'Sixth Season API running. Frontend build not found. Build client and copy to /public.' });
   });
 }
 
@@ -96,7 +96,7 @@ app.use((err, req, res, next) => {
     console.log('Database initialized');
 
     app.listen(PORT, () => {
-      console.log(`Workers Ball Accreditation server running on port ${PORT}`);
+      console.log(`Sixth Season Accreditation server running on port ${PORT}`);
       console.log(`Event: ${process.env.EVENT_NAME}`);
     });
   } catch (err) {

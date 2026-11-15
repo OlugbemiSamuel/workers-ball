@@ -5,7 +5,7 @@
 // Generate a unique ticket ID using UUID prefix
 function generateTicketId() {
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `WB26-${random}`;
+  return `SS26-${random}`;
 }
 
 // Generate QR code payload URL for accreditation scanning

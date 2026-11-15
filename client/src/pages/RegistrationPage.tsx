@@ -26,24 +26,24 @@ export default function RegistrationPage() {
       <div className="relative flex-1 overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
           <img
-            src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
-            alt="Workers Ball 2026"
+            src="/images/sixth-season-flyer.jpeg"
+            alt="Sixth Season Pop-Up Experience"
             className="w-full h-full object-cover"
           />
         </div>
         <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-black/90 via-black/60 to-transparent" />
-        <div className="absolute inset-0 w-full h-full bg-[radial-gradient(circle_at_top_center,rgba(217,119,6,0.15)_0%,transparent_50%)]" />
+        <div className="absolute inset-0 w-full h-full bg-[radial-gradient(circle_at_top_center,rgba(255,255,255,0.12)_0%,transparent_50%)]" />
       </div>
 
       {/* Overlay Content */}
       <div className="relative z-10 flex-1 flex items-center justify-center px-6 py-12">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gold-600 text-dark-900 mb-4">
-              <span className="font-bold text-lg">WB</span>
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full border border-white/40 text-white mb-4">
+              <span className="font-bold text-lg">S6</span>
             </div>
-            <h1 className="text-4xl font-serif font-bold text-white mb-2 leading-tight">Workers Ball 2026</h1>
-            <p className="text-gold-400 font-semibold tracking-wider uppercase text-sm">Light of the Globe</p>
+            <h1 className="text-4xl font-serif font-bold text-white mb-2 leading-tight">SIXTH SEASON</h1>
+            <p className="text-zinc-400 font-semibold tracking-wider uppercase text-sm">Beyond Limits. Beyond Seasons.</p>
           </div>
 
           {/* Modern Registration Card */}
@@ -161,10 +161,10 @@ export default function RegistrationPage() {
 
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-500">
-              {process.env.EVENT_DATE || '22nd Nov. 2026'} • {process.env.EVENT_TIME || '4PM'}
+              {process.env.EVENT_DATE || 'Sunday, 22nd November 2026'} • {process.env.EVENT_TIME || '6:00 PM'}
             </p>
             <p className="text-sm text-gray-500">
-              {process.env.VENUE || 'Harvesters Globe Ologolo'}
+              {process.env.VENUE || 'BYD, Victoria Island, Lagos'}
             </p>
           </div>
         </div>

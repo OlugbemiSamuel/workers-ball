@@ -49,7 +49,7 @@ export default function GuestListPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-serif font-bold text-gold-400">Guest Management</h1>
-          <p className="text-gray-400 text-sm">View registered guests for Workers Ball 2026</p>
+          <p className="text-gray-400 text-sm">View registered guests for Sixth Season</p>
         </div>
         <button
           onClick={() => {}}

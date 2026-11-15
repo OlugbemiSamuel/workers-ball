@@ -11,7 +11,7 @@ export const api = axios.create({
 
 // Auth token interceptor
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("workersball.token");
+  const token = localStorage.getItem("sixthseason.token");
   if (token) {
     config.headers.Authorization = token.startsWith("Basic ") ? token : `Bearer ${token}`;
   }

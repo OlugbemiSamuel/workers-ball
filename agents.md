@@ -1,7 +1,7 @@
-# Workers Ball 2026 — Accreditation System Build Log
+# Sixth Season — Accreditation System Build Log
 
 ## Project Goal
-Church event management & accreditation system for "Workers Ball 2026" (Harvesters Globe Ologolo, 22nd Nov 2026, 4PM).
+Event management & accreditation system for "Sixth Season" (BYD, Victoria Island, Lagos, Sunday 22nd November 2026, 6:00 PM).
 Stack: React + TypeScript + Express + Node.js + SQLite (sql.js).
 Deploy target: Namecheap Shared Hosting (cPanel File Manager, Setup Node.js App).
 Repository: https://github.com/OlugbemiSamuel/workers-ball
@@ -117,10 +117,10 @@ Follows the exact same layered pattern as the texcellence conference project:
 ## Environment Variables (.env, NOT committed)
 ```
 PORT=3000
-EVENT_NAME=Workers Ball 2026
-EVENT_DATE=22nd Nov. 2026
-EVENT_TIME=4PM
-VENUE=Harvesters Globe Ologolo
+EVENT_NAME=Sixth Season
+EVENT_DATE=Sunday, 22nd November 2026
+EVENT_TIME=6:00 PM
+VENUE=BYD, Victoria Island, Lagos
 REGISTRATION_URL=http://localhost:5173/register
 ADMIN_EMAIL=admin@harvesters.org
 ADMIN_PASSWORD=Admin123!

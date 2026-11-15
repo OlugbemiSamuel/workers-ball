@@ -1,4 +1,4 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 import app from "./app.js";
 import { initDb } from "./db/connection.js";
 
@@ -11,6 +11,6 @@ const PORT = process.env.PORT || 3000;
 initDb();
 
 app.listen(PORT, () => {
-  console.log(`Workers Ball Accreditation server running on port ${PORT}`);
+  console.log(`Sixth Season Accreditation server running on port ${PORT}`);
   console.log(`Event: ${process.env.EVENT_NAME}`);
 });

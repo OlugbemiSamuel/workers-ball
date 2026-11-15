@@ -2,7 +2,7 @@ node_modules/
 database.sqlite
 uploads/
 dist/
-public/
+/public/
 .env
 .DS_Store
 *.log

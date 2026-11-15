@@ -1,4 +1,4 @@
-import cors from "cors";
+﻿import cors from "cors";
 import express, {
   type NextFunction,
   type Request,
@@ -42,7 +42,7 @@ app.use("/api/registration", registrationRouter);
 
 // Simple root message.
 app.get("/", (_req: Request, res: Response) => {
-  res.json({ message: "Workers Ball 2026 API - ready" });
+  res.json({ message: "Sixth Season API - ready" });
 });
 
 // Public ticket verification for printed QRs (no login): resolves a token

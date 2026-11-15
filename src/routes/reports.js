@@ -49,8 +49,8 @@ router.get('/accreditation', async (req, res) => {
     const recent = rowsToObjects(recentResult);
 
     res.json({
-      event: process.env.EVENT_NAME || 'Workers Ball 2026',
-      eventDate: process.env.EVENT_DATE || '22nd Nov. 2026',
+      event: process.env.EVENT_NAME || 'Sixth Season',
+      eventDate: process.env.EVENT_DATE || 'Sunday, 22nd November 2026',
       total, accredited, pending, percentage, surgeHours, recent
     });
   } catch (err) {
@@ -81,16 +81,16 @@ router.get('/pdf', async (req, res) => {
     const allResult = db.exec('SELECT * FROM guests ORDER BY created_at DESC');
     const allGuests = rowsToObjects(allResult);
 
-    const eventName = process.env.EVENT_NAME || 'Workers Ball 2026';
-    const eventDate = process.env.EVENT_DATE || '22nd Nov. 2026';
-    const venue = process.env.VENUE || 'Harvesters Globe Ologolo';
+    const eventName = process.env.EVENT_NAME || 'Sixth Season';
+    const eventDate = process.env.EVENT_DATE || 'Sunday, 22nd November 2026';
+    const venue = process.env.VENUE || 'BYD, Victoria Island, Lagos';
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
 
     doc.setFillColor(0, 0, 0);
     doc.rect(0, 0, pageWidth, 60, 'F');
-    doc.setTextColor(255, 215, 0);
+    doc.setTextColor(212, 212, 216);
     doc.setFontSize(24);
     doc.text(eventName, pageWidth / 2, 25, { align: 'center' });
     doc.setTextColor(255, 255, 255);
@@ -109,7 +109,7 @@ router.get('/pdf', async (req, res) => {
       doc.setFontSize(12);
       doc.setTextColor(50, 50, 50);
       doc.text(label, 20, y);
-      doc.setTextColor(0, 100, 0);
+      doc.setTextColor(0, 0, 0);
       doc.text(String(value), 140, y);
       y += 8;
     });

@@ -18,7 +18,14 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const flyerPath = path.resolve(__dirname, '../../public/images/eventFlyer.jpeg');
+// Resolve the flyer from the built public folder or the client source public folder.
+function findFlyerPath() {
+  const candidates = [
+    path.resolve(__dirname, '../../public/images/sixth-season-flyer.jpeg'),
+    path.resolve(__dirname, '../../client/public/images/sixth-season-flyer.jpeg')
+  ];
+  return candidates.find((candidate) => fs.existsSync(candidate)) || candidates[0];
+}
 
 async function sendTicketEmail(guest) {
   if (!guest.email) throw new Error('Guest has no email address');
@@ -31,12 +38,12 @@ async function sendTicketEmail(guest) {
       margin: 2,
       color: { dark: '#000000', light: '#FFFFFF' }
     }),
-    fs.promises.readFile(flyerPath)
+    fs.promises.readFile(findFlyerPath())
   ]);
-  const eventName = process.env.EVENT_NAME || 'Workers Ball 2026';
-  const eventDate = process.env.EVENT_DATE || '22nd Nov. 2026';
-  const eventTime = process.env.EVENT_TIME || '4PM';
-  const venue = process.env.VENUE || 'Harvesters Globe Ologolo';
+  const eventName = process.env.EVENT_NAME || 'Sixth Season';
+  const eventDate = process.env.EVENT_DATE || 'Sunday, 22nd November 2026';
+  const eventTime = process.env.EVENT_TIME || '6:00 PM';
+  const venue = process.env.VENUE || 'BYD, Victoria Island, Lagos';
 
   return transporter.sendMail({
     from: `"${eventName}" <${process.env.DEFAULT_FROM_EMAIL || 'noreply@accredit.vip'}>`,
@@ -45,17 +52,17 @@ async function sendTicketEmail(guest) {
     html: generateTicketEmail(guest, { eventName, eventDate, eventTime, venue }),
     attachments: [
       {
-        filename: 'workers-ball-ticket-qr.png',
+        filename: 'sixth-season-ticket-qr.png',
         content: qrBuffer,
         contentType: 'image/png',
-        cid: 'workers-ball-qr',
+        cid: 'sixth-season-qr',
         contentDisposition: 'inline'
       },
       {
-        filename: 'workers-ball-flyer.jpeg',
+        filename: 'sixth-season-flyer.jpeg',
         content: flyerBuffer,
         contentType: 'image/jpeg',
-        cid: 'workers-ball-flyer',
+        cid: 'sixth-season-flyer',
         contentDisposition: 'inline'
       }
     ]
@@ -65,27 +72,27 @@ async function sendTicketEmail(guest) {
 function generateTicketEmail(guest, event) {
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your Ticket — ${event.eventName}</title></head>
-<body style="margin:0;padding:24px 12px;font-family:'Segoe UI',Arial,sans-serif;background:#21170d;color:#fff8e9;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#fff8e9;border:1px solid #d89a27;">
-    <tr><td style="padding:0;background:#21170d;">
-      <img src="cid:workers-ball-flyer" alt="Workers Ball 2026 event flyer" width="600" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
+<body style="margin:0;padding:24px 12px;font-family:'Segoe UI',Arial,sans-serif;background:#000000;color:#ffffff;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#0a0a0a;border:1px solid #2a2a2a;">
+    <tr><td style="padding:0;background:#000000;">
+      <img src="cid:sixth-season-flyer" alt="Sixth Season Pop-Up Experience flyer" width="600" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
     </td></tr>
-    <tr><td align="center" style="padding:24px 20px 10px;background:#3a2612;">
-      <h1 style="margin:0;font-size:24px;color:#f4bd4f;letter-spacing:1px;">${event.eventName}</h1>
-      <p style="margin:8px 0 0;font-size:14px;color:#fff1ce;letter-spacing:1px;">Your event ticket · Light of the Globe</p>
+    <tr><td align="center" style="padding:24px 20px 10px;background:#000000;">
+      <h1 style="margin:0;font-size:24px;color:#ffffff;letter-spacing:4px;">SIXTH SEASON</h1>
+      <p style="margin:8px 0 0;font-size:12px;color:#a1a1aa;letter-spacing:2px;text-transform:uppercase;">Beyond Limits. Beyond Seasons.</p>
     </td></tr>
-    <tr><td style="padding:24px 20px;text-align:center;background:#fff8e9;color:#3a2612;">
+    <tr><td style="padding:24px 20px;text-align:center;background:#ffffff;color:#000000;">
       <p style="margin:6px 0;font-size:17px;"><strong>Guest:</strong> ${guest.full_name}</p>
-      <p style="margin:8px 0;color:#6b4c23;font-size:15px;"><strong>Ticket ID:</strong> ${guest.ticket_id}</p>
-      <p style="margin:8px 0;color:#6b4c23;font-size:15px;"><strong>Date:</strong> ${event.eventDate}</p>
-      <p style="margin:8px 0;color:#6b4c23;font-size:15px;"><strong>Time:</strong> ${event.eventTime}</p>
-      <p style="margin:8px 0;color:#6b4c23;font-size:15px;"><strong>Venue:</strong> ${event.venue}</p>
+      <p style="margin:8px 0;color:#3f3f46;font-size:15px;"><strong>Ticket ID:</strong> ${guest.ticket_id}</p>
+      <p style="margin:8px 0;color:#3f3f46;font-size:15px;"><strong>Date:</strong> ${event.eventDate}</p>
+      <p style="margin:8px 0;color:#3f3f46;font-size:15px;"><strong>Time:</strong> ${event.eventTime}</p>
+      <p style="margin:8px 0;color:#3f3f46;font-size:15px;"><strong>Venue:</strong> ${event.venue}</p>
     </td></tr>
-    <tr><td align="center" style="padding:24px 20px;background:#f3e5c4;border-top:1px solid #dfbf7a;">
-      <img src="cid:workers-ball-qr" alt="Accreditation QR code for ${guest.ticket_id}" width="220" height="220" style="display:block;width:220px;height:220px;max-width:100%;border:5px solid #d89a27;border-radius:8px;background:#ffffff;" />
-      <p style="margin:16px 0 0;font-size:14px;color:#4a3218;">Present this QR code at the entrance for accreditation.</p>
+    <tr><td align="center" style="padding:24px 20px;background:#000000;border-top:1px solid #2a2a2a;">
+      <img src="cid:sixth-season-qr" alt="Accreditation QR code for ${guest.ticket_id}" width="220" height="220" style="display:block;width:220px;height:220px;max-width:100%;border:1px solid #ffffff;background:#ffffff;" />
+      <p style="margin:16px 0 0;font-size:14px;color:#d4d4d8;">Present this QR code at the entrance for accreditation.</p>
     </td></tr>
-    <tr><td style="padding:18px;text-align:center;font-size:12px;color:#fff1ce;background:#3a2612;">
+    <tr><td style="padding:18px;text-align:center;font-size:12px;color:#a1a1aa;background:#000000;border-top:1px solid #2a2a2a;">
       <p style="margin:0;">Please present this ticket on your phone or as a printout.</p>
       <p style="margin:8px 0 0;">${event.venue} · ${event.eventDate} · ${event.eventTime}</p>
     </td></tr>

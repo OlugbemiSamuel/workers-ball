@@ -1,4 +1,4 @@
-import { Router } from "express";
+﻿import { Router } from "express";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { getDb } from "../db/connection.js";
 
@@ -27,8 +27,8 @@ statsRouter.get("/accreditation", requireAuth, (_req, res) => {
   ).all() as Array<{ first_name: string; last_name: string; email: string | null; ticket_number: string | null; accredited_at: string | null }>;
 
   res.json({
-    event: process.env.EVENT_NAME || "Workers Ball 2026",
-    eventDate: process.env.EVENT_DATE || "22nd Nov. 2026",
+    event: process.env.EVENT_NAME || "Sixth Season",
+    eventDate: process.env.EVENT_DATE || "Sunday, 22nd November 2026",
     total,
     accredited,
     pending,
@@ -56,9 +56,9 @@ statsRouter.get("/report/pdf", requireAuth, async (_req, res) => {
 
   const allRows = db.prepare(`SELECT * FROM guests ORDER BY created_at DESC`).all() as Array<any>;
 
-  const eventName = process.env.EVENT_NAME || "Workers Ball 2026";
-  const eventDate = process.env.EVENT_DATE || "22nd Nov. 2026";
-  const venue = process.env.VENUE || "Harvesters Globe Ologolo";
+  const eventName = process.env.EVENT_NAME || "Sixth Season";
+  const eventDate = process.env.EVENT_DATE || "Sunday, 22nd November 2026";
+  const venue = process.env.VENUE || "BYD, Victoria Island, Lagos";
 
   const PDFKit = (await import("pdfkit")).default;
   const doc = new PDFKit({ margin: 50 });
@@ -68,8 +68,8 @@ statsRouter.get("/report/pdf", requireAuth, async (_req, res) => {
 
   // Header
   doc.rect(0, 0, doc.page.width, 60).fill("#000000");
-  doc.fillColor("#ffd700").fontSize(24).text(eventName, { align: "center", y: 25 });
-  doc.fillColor("#ffffff").fontSize(12).text(`${eventDate} • ${venue}`, { align: "center", y: 40 });
+  doc.fillColor("#d4d4d8").fontSize(24).text(eventName, { align: "center", y: 25 });
+  doc.fillColor("#ffffff").fontSize(12).text(`${eventDate} â€¢ ${venue}`, { align: "center", y: 40 });
   doc.fillColor("#ffffff").fontSize(12).text("Accreditation Report", { align: "center", y: 52 });
 
   // Summary

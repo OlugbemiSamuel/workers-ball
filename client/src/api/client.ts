@@ -3,7 +3,7 @@
 // paths, and error handling are written ONCE. Components never touch
 // fetch or localStorage directly - they call auth.api / guests.api.
 
-const TOKEN_KEY = "workersball.token";
+const TOKEN_KEY = "sixthseason.token";
 
 export class ApiError extends Error {
   readonly status: number;

@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+﻿import { randomBytes } from "node:crypto";
 import type { CreateGuestInput, Guest } from "../types/guest.types.js";
 import { getDb } from "../db/connection.js";
 
@@ -12,7 +12,7 @@ const toGuest = (row: GuestRow): Guest => ({ ...row });
 
 export const createGuest = (input: CreateGuestInput): Guest => {
   const db = getDb();
-  const ticket_number = `WB26-${String(Math.floor(Math.random() * 90000) + 10000).padStart(5, "0")}`;
+  const ticket_number = `SS26-${String(Math.floor(Math.random() * 90000) + 10000).padStart(5, "0")}`;
   const qr_token = randomBytes(32).toString("hex");
 
   db.prepare(

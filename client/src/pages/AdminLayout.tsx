@@ -46,10 +46,10 @@ export default function AdminLayout() {
         <div className="w-full max-w-md px-6">
           <div className="bg-dark-800 border border-white/20 rounded-2xl p-8 shadow-2xl">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-gold-600 flex items-center justify-center text-dark-900 font-bold">
-                WB
+              <div className="w-10 h-10 rounded-full border border-white/40 flex items-center justify-center text-white font-bold">
+                S6
               </div>
-              <span className="font-serif font-bold text-xl text-white tracking-tight">Workers Ball 2026</span>
+              <span className="font-serif font-bold text-xl text-white tracking-tight">SIXTH SEASON</span>
             </div>
             <h2 className="text-gold-400 font-serif font-bold text-2xl mb-2">Admin Login</h2>
             <p className="text-gray-400 text-sm mb-6">Enter admin credentials to access the dashboard</p>
@@ -139,10 +139,10 @@ export default function AdminLayout() {
       } md:translate-x-0 md:relative md:static md:translate-x-0`}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gold-600 flex items-center justify-center text-dark-900 font-bold">
-              WB
+            <div className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center text-white font-bold">
+              S6
             </div>
-            <span className="font-serif font-bold text-lg text-white tracking-tight">Workers Ball 2026</span>
+            <span className="font-serif font-bold text-lg text-white tracking-tight">SIXTH SEASON</span>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}

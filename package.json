@@ -1,7 +1,7 @@
 {
   "name": "workers-ball-accreditation",
   "version": "1.0.0",
-  "description": "Church event accreditation and guest management system for Workers Ball 2026",
+  "description": "Fashion pop-up accreditation and guest management system for Sixth Season",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
