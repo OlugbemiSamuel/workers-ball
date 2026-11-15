@@ -10,10 +10,21 @@ function generateTicketId() {
 
 // Generate QR code payload URL for accreditation scanning
 function generateQRPayload(ticketId) {
-  const baseUrl = process.env.REGISTRATION_URL || 'https://yourdomain.accredit.vip';
-  // Strip trailing slash
-  const cleanBase = baseUrl.replace(/\/$/, '');
-  return `${cleanBase}/accredit?ticket=${ticketId}`;
+  const accreditationUrl = process.env.ACCREDITATION_URL;
+  const baseUrl = new URL(
+    accreditationUrl || process.env.REGISTRATION_URL || 'https://yourdomain.accredit.vip'
+  );
+
+  if (!accreditationUrl) {
+    baseUrl.pathname = '/accredit';
+  } else if (!baseUrl.pathname.replace(/\/+$/, '').endsWith('/accredit')) {
+    baseUrl.pathname = `${baseUrl.pathname.replace(/\/+$/, '')}/accredit`;
+  }
+
+  baseUrl.search = '';
+  baseUrl.hash = '';
+  baseUrl.searchParams.set('ticket', ticketId);
+  return baseUrl.toString();
 }
 
 module.exports = { generateTicketId, generateQRPayload };

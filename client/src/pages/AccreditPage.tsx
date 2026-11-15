@@ -22,6 +22,33 @@ export default function AccreditPage({ onAuthExpired }: AccreditPageProps = {}):
   const scannerSectionRef = useRef<HTMLElement | null>(null);
   const manualSectionRef = useRef<HTMLElement | null>(null);
 
+  useEffect(() => {
+    const ticketId = new URLSearchParams(window.location.search).get("ticket");
+    if (!ticketId) return;
+
+    let cancelled = false;
+    setLoading(true);
+    void accreditApi.getByTicket(ticketId)
+      .then(({ data }) => {
+        if (cancelled) return;
+        setSelectedGuest(data.guest);
+        setSearchResults([]);
+        setSearchTerm("");
+        setActiveTab("manual");
+        showMessage("Ticket found. Verify the guest details to accredit.", "info");
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) showRequestError(err, "Ticket not found");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const showMessage = (text: string, type: "success" | "error" | "info"): void => {
     setMessage({ text, type });
     window.setTimeout(() => setMessage(null), 4500);

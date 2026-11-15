@@ -39,6 +39,7 @@ app.getDb = getDb;
 
 // Public routes (no auth)
 app.use('/api/guests', require('./src/routes/guests'));
+app.use('/api/registration', require('./src/routes/registration'));
 app.use('/api/accredit', require('./src/routes/accredit'));
 app.use('/api/tickets', require('./src/routes/tickets'));
 app.use('/api/import-export', require('./src/routes/import-export'));
