@@ -6,6 +6,7 @@ import {
   Download,
   FileText,
   LayoutDashboard,
+  Loader2,
   LogOut,
   Mail,
   Menu,
@@ -18,7 +19,8 @@ import {
   X,
 } from "lucide-react";
 import { guestApi, ticketApi, importExportApi, reportsApi, type Guest } from "@/services/api.js";
-import { buildWhatsAppTicketLink, ticketQrUrl } from "@/utils/whatsapp.js";
+import { buildWhatsAppLink, ticketCaption, normalizePhone } from "@/utils/whatsapp.js";
+import { renderTicketCardFile } from "@/utils/ticketImage.js";
 
 type Section = "overview" | "attendees" | "reports";
 
@@ -45,6 +47,11 @@ export default function DashboardPage({
   const [editing, setEditing] = useState<Guest | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [ticketGuest, setTicketGuest] = useState<Guest | null>(null);
+  const [ticketCard, setTicketCard] = useState<{ url: string; blob: Blob; file: File } | null>(null);
+  const [ticketCardBusy, setTicketCardBusy] = useState(false);
+  const [ticketCardError, setTicketCardError] = useState<string | null>(null);
+  const [ticketCopied, setTicketCopied] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -207,6 +214,81 @@ export default function DashboardPage({
     }),
     [guestList]
   );
+
+  const closeTicketCard = (): void => {
+    setTicketGuest(null);
+    setTicketCardError(null);
+    setTicketCopied(false);
+    setTicketCard((previous) => {
+      if (previous) URL.revokeObjectURL(previous.url);
+      return null;
+    });
+  };
+
+  const openTicketCard = async (guest: Guest): Promise<void> => {
+    setTicketGuest(guest);
+    setTicketCardError(null);
+    setTicketCopied(false);
+    setTicketCardBusy(true);
+    try {
+      const file = await renderTicketCardFile(guest);
+      const url = URL.createObjectURL(file);
+      setTicketCard((previous) => {
+        if (previous) URL.revokeObjectURL(previous.url);
+        return { url, blob: file, file };
+      });
+    } catch (err: any) {
+      setTicketCardError(err?.message || "Could not build the ticket image on this device.");
+    } finally {
+      setTicketCardBusy(false);
+    }
+  };
+
+  const copyTicketImage = async (): Promise<void> => {
+    if (!ticketCard) return;
+    try {
+      if (!navigator.clipboard || typeof ClipboardItem === "undefined") {
+        throw new Error("Clipboard images are not supported here.");
+      }
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": ticketCard.blob })]);
+      setTicketCopied(true);
+      window.setTimeout(() => setTicketCopied(false), 6000);
+    } catch {
+      setTicketCardError("This browser blocked copying the image. Use “Download image”, then drag the file into the chat.");
+    }
+  };
+
+  const shareTicketImage = async (): Promise<void> => {
+    if (!ticketCard || !ticketGuest) return;
+    try {
+      await navigator.share({
+        files: [ticketCard.file],
+        text: ticketCaption(ticketGuest),
+      });
+    } catch {
+      // The guest cancelled the share sheet — nothing to do.
+    }
+  };
+
+  const downloadTicketImage = (): void => {
+    if (!ticketCard) return;
+    const link = document.createElement("a");
+    link.href = ticketCard.url;
+    link.download = ticketCard.file.name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  const ticketWhatsAppLink = ticketGuest ? buildWhatsAppLink(ticketGuest.phone, ticketCaption(ticketGuest)) : null;
+  const canShareTicketImage = (() => {
+    if (!ticketCard || typeof navigator === "undefined" || !navigator.canShare) return false;
+    try {
+      return navigator.canShare({ files: [ticketCard.file] });
+    } catch {
+      return false;
+    }
+  })();
 
   const titles: Record<Section, { title: string; hint: string }> = {
     overview: { title: "Overview", hint: "Sixth Season Pop-Up Experience — Sunday, 22nd November 2026, BYD, Victoria Island, Lagos" },
@@ -459,16 +541,15 @@ export default function DashboardPage({
                                 </span>
                               )}
                               {guest.phone ? (
-                                <a
-                                  href={buildWhatsAppTicketLink(guest, ticketQrUrl(guest.ticket_id)) ?? undefined}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
+                                <button
+                                  type="button"
+                                  onClick={() => void openTicketCard(guest)}
                                   className="border border-emerald-500/40 p-1.5 text-emerald-400 transition-colors hover:border-emerald-400 hover:text-emerald-300"
                                   title={`Send ticket on WhatsApp (${guest.phone})`}
                                   aria-label={`Send ticket to ${guest.full_name} on WhatsApp`}
                                 >
                                   <MessageCircle className="w-4 h-4" />
-                                </a>
+                                </button>
                               ) : (
                                 <span
                                   className="cursor-not-allowed border border-white/10 p-1.5 text-zinc-600"
@@ -557,6 +638,95 @@ export default function DashboardPage({
           )}
         </main>
       </div>
+
+      {/* WhatsApp ticket card */}
+      {ticketGuest && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/80 p-4 sm:items-center">
+          <div className="w-full max-w-lg border border-white/20 bg-zinc-950 p-5 sm:p-6">
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-white">Send ticket on WhatsApp</h3>
+                <p className="mt-1 truncate text-xs text-zinc-500">
+                  {ticketGuest.full_name} · {normalizePhone(ticketGuest.phone) ? `+${normalizePhone(ticketGuest.phone)}` : "no phone number"}
+                </p>
+              </div>
+              <button onClick={closeTicketCard} className="text-zinc-400 hover:text-white" aria-label="Close ticket image">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {ticketCardBusy && (
+              <div className="flex items-center justify-center gap-2 py-12 text-sm text-zinc-400">
+                <Loader2 className="h-4 w-4 animate-spin text-[#F17A1E]" /> Building the ticket image…
+              </div>
+            )}
+
+            {ticketCardError && (
+              <p className="mt-3 border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">{ticketCardError}</p>
+            )}
+
+            {ticketCard && (
+              <>
+                <img
+                  src={ticketCard.url}
+                  alt={`Sixth Season ticket for ${ticketGuest.full_name}`}
+                  className="mx-auto mt-3 max-h-[46vh] w-auto border border-white/10"
+                />
+                <ol className="mt-4 space-y-1 text-xs text-zinc-400">
+                  <li>1. Copy the ticket picture below.</li>
+                  <li>2. Open the WhatsApp chat.</li>
+                  <li>3. Paste in the message box (Ctrl+V on a computer, long-press → Paste on a phone) and send.</li>
+                </ol>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => void copyTicketImage()}
+                    className={`py-3 text-sm font-semibold uppercase tracking-wide transition-colors ${ticketCopied ? "bg-white/10 text-emerald-300" : "bg-[#F17A1E] text-black hover:bg-[#ff8b33]"}`}
+                  >
+                    {ticketCopied ? "Image copied ✓" : "1. Copy image"}
+                  </button>
+                  {ticketWhatsAppLink ? (
+                    <a
+                      href={ticketWhatsAppLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="border border-emerald-500/50 py-3 text-center text-sm font-semibold uppercase tracking-wide text-emerald-300 transition-colors hover:bg-emerald-500/10"
+                    >
+                      2. Open WhatsApp
+                    </a>
+                  ) : (
+                    <span className="cursor-not-allowed border border-white/10 py-3 text-center text-sm font-semibold uppercase tracking-wide text-zinc-600">
+                      No phone number
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {canShareTicketImage && (
+                    <button
+                      type="button"
+                      onClick={() => void shareTicketImage()}
+                      className="border border-white/20 py-2.5 text-xs font-semibold uppercase tracking-wide text-white transition-colors hover:bg-white/5"
+                    >
+                      Share image…
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={downloadTicketImage}
+                    className="border border-white/20 py-2.5 text-xs font-semibold uppercase tracking-wide text-white transition-colors hover:bg-white/5"
+                  >
+                    Download image
+                  </button>
+                </div>
+                <p className="mt-3 text-[11px] leading-relaxed text-zinc-500">
+                  The caption is already typed in the chat — the picture is added by you. Fully automatic picture sending
+                  comes with the WhatsApp/Twilio API integration.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Add Guest Modal */}
       {adding && (

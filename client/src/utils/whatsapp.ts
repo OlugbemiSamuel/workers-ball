@@ -30,34 +30,26 @@ export function normalizePhone(raw: string | null | undefined): string | null {
   return digits;
 }
 
-interface TicketMessageInput {
-  full_name: string;
-  ticket_id: string;
-  phone: string | null;
+/** Opens the chat with the caption pre-typed; the ticket image is attached by the sender. */
+export function buildWhatsAppLink(phone: string | null | undefined, message: string): string | null {
+  const normalized = normalizePhone(phone);
+  if (!normalized) return null;
+  return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
 }
 
-export function buildWhatsAppTicketLink(
-  guest: TicketMessageInput,
-  ticketQrUrl: string,
-): string | null {
-  const phone = normalizePhone(guest.phone);
-  if (!phone) return null;
-
+export function ticketCaption(guest: { full_name: string; ticket_id: string }): string {
   const firstName = guest.full_name.trim().split(/\s+/)[0] || "there";
-  const message = [
-    `Hi ${firstName}, you're confirmed for SIXTH SEASON.`,
+  return [
+    `Hi ${firstName}, here is your SIXTH SEASON ticket.`,
     "",
     "Sunday, 22nd November 2026",
     "6:00 PM",
     "BYD, Victoria Island, Lagos",
     "",
     `Ticket: ${guest.ticket_id}`,
-    `QR code: ${ticketQrUrl}`,
     "",
     "Show this at the entrance. See you there!",
   ].join("\n");
-
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
 export function ticketQrUrl(ticketId: string): string {
