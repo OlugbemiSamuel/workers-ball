@@ -9,13 +9,16 @@ import {
   LogOut,
   Mail,
   Menu,
+  MessageCircle,
   Plus,
   Search,
+  ShieldCheck,
   Upload,
   Users,
   X,
 } from "lucide-react";
 import { guestApi, ticketApi, importExportApi, reportsApi, type Guest } from "@/services/api.js";
+import { buildWhatsAppTicketLink, ticketQrUrl } from "@/utils/whatsapp.js";
 
 type Section = "overview" | "attendees" | "reports";
 
@@ -407,49 +410,77 @@ export default function DashboardPage({
               </div>
 
               <div className="overflow-x-auto border border-white/10 bg-zinc-950">
-                <table className="w-full min-w-[860px] border-collapse text-left">
+                <table className="w-full min-w-[560px] border-collapse text-left">
                   <thead>
                     <tr className="border-b border-white/10 text-xs uppercase tracking-widest text-zinc-500">
-                      <th className="py-4 pl-4 pr-4">Guest</th>
-                      <th className="py-4 pr-4">Email</th>
-                      <th className="py-4 pr-4">Ticket ID</th>
-                      <th className="py-4 pr-4">Phone</th>
-                      <th className="py-4 pr-4">Status</th>
-                      <th className="py-4 pr-4">Sent</th>
+                      <th className="py-4 pl-4 pr-3">Guest</th>
+                      <th className="py-4 pr-3">Status</th>
                       <th className="py-4 pr-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loading ? (
-                      <tr><td colSpan={7} className="p-10 text-center text-sm text-zinc-500">Loading guests...</td></tr>
+                      <tr><td colSpan={3} className="p-10 text-center text-sm text-zinc-500">Loading guests...</td></tr>
                     ) : visible.length === 0 ? (
-                      <tr><td colSpan={7} className="p-10 text-center text-sm text-zinc-500">No guests found.</td></tr>
+                      <tr><td colSpan={3} className="p-10 text-center text-sm text-zinc-500">No guests found.</td></tr>
                     ) : (
                       visible.map((guest) => (
                         <tr key={guest.id} className="border-b border-white/5 transition-colors hover:bg-white/[0.03]">
-                          <td className="py-4 pl-4 pr-4 font-medium">{guest.full_name}</td>
-                          <td className="py-4 pr-4 text-sm text-zinc-400">{guest.email || "—"}</td>
-                          <td className="py-4 pr-4 font-mono text-sm text-zinc-300">{guest.ticket_id}</td>
-                          <td className="py-4 pr-4 text-sm text-zinc-400">{guest.phone || "—"}</td>
-                          <td className="py-4 pr-4">
+                          <td className="py-4 pl-4 pr-3">
+                            <p className="font-medium text-white">{guest.full_name}</p>
+                            <p className="break-all text-xs text-zinc-500">{guest.email || "No email address"}</p>
+                            <p className="text-xs text-zinc-500">{guest.phone || "No phone number"}</p>
+                            <p className="mt-0.5 font-mono text-xs text-zinc-400">{guest.ticket_id}</p>
+                          </td>
+                          <td className="py-4 pr-3">
                             <span className={`inline-flex items-center gap-1.5 border px-2.5 py-1 text-xs font-medium ${guest.accredited_at ? "border-white/40 bg-white/10 text-white" : "border-white/15 text-zinc-400"}`}>
                               {guest.accredited_at ? (<><CheckCircle className="w-3 h-3" /> Accredited</>) : "Pending"}
                             </span>
+                            <p className="mt-1 text-[11px] text-zinc-500">Tickets sent: {guest.ticket_sent_count || 0}</p>
                           </td>
-                          <td className="py-4 pr-4 text-sm text-zinc-400">{guest.ticket_sent_count || 0}</td>
                           <td className="py-4 pr-4">
                             <div className="flex items-center justify-end gap-1.5">
-                              <button
-                                onClick={() => handleSendTicket(guest)}
-                                disabled={sendingTicket === guest.id}
-                                className="border border-white/15 p-2 text-zinc-300 transition-colors hover:border-white hover:text-white"
-                                title="Send Ticket Email"
-                              >
-                                {sendingTicket === guest.id ? "…" : <Mail className="w-4 h-4" />}
-                              </button>
+                              {guest.email ? (
+                                <button
+                                  onClick={() => handleSendTicket(guest)}
+                                  disabled={sendingTicket === guest.id}
+                                  className="border border-white/15 p-1.5 text-zinc-300 transition-colors hover:border-white hover:text-white"
+                                  title="Send Ticket Email"
+                                >
+                                  {sendingTicket === guest.id ? "…" : <Mail className="w-4 h-4" />}
+                                </button>
+                              ) : (
+                                <span
+                                  className="cursor-not-allowed border border-white/10 p-1.5 text-zinc-600"
+                                  title="No email address on file"
+                                  aria-label="No email address on file"
+                                >
+                                  <Mail className="w-4 h-4" />
+                                </span>
+                              )}
+                              {guest.phone ? (
+                                <a
+                                  href={buildWhatsAppTicketLink(guest, ticketQrUrl(guest.ticket_id)) ?? undefined}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="border border-emerald-500/40 p-1.5 text-emerald-400 transition-colors hover:border-emerald-400 hover:text-emerald-300"
+                                  title={`Send ticket on WhatsApp (${guest.phone})`}
+                                  aria-label={`Send ticket to ${guest.full_name} on WhatsApp`}
+                                >
+                                  <MessageCircle className="w-4 h-4" />
+                                </a>
+                              ) : (
+                                <span
+                                  className="cursor-not-allowed border border-white/10 p-1.5 text-zinc-600"
+                                  title="No phone number on file"
+                                  aria-label="No phone number on file"
+                                >
+                                  <MessageCircle className="w-4 h-4" />
+                                </span>
+                              )}
                               <button
                                 onClick={() => setEditing(guest)}
-                                className="border border-white/15 p-2 text-zinc-300 transition-colors hover:border-white hover:text-white"
+                                className="border border-white/15 p-1.5 text-zinc-300 transition-colors hover:border-white hover:text-white"
                                 title="Edit Guest"
                               >
                                 <FileText className="w-4 h-4" />
@@ -457,10 +488,11 @@ export default function DashboardPage({
                               <button
                                 onClick={() => handleAccredit(guest)}
                                 disabled={!!guest.accredited_at}
-                                className={`px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-colors ${guest.accredited_at ? "cursor-not-allowed bg-white/5 text-zinc-600" : "bg-[#F17A1E] text-black hover:bg-[#ff8b33]"}`}
+                                className={`p-1.5 transition-colors ${guest.accredited_at ? "cursor-not-allowed bg-white/5 text-zinc-600" : "bg-[#F17A1E] text-black hover:bg-[#ff8b33]"}`}
                                 title={guest.accredited_at ? "Already accredited" : "Accredit Guest"}
+                                aria-label={guest.accredited_at ? "Already accredited" : `Accredit ${guest.full_name}`}
                               >
-                                {guest.accredited_at ? "Done" : "Accredit"}
+                                {guest.accredited_at ? <CheckCircle className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
                               </button>
                             </div>
                           </td>
